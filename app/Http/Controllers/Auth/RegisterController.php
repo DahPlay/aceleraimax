@@ -14,6 +14,7 @@ use Illuminate\Contracts\Validation\Validator as ValidationValidator;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -152,10 +153,12 @@ class RegisterController extends Controller
         $data['coupon_id'] = $this->getCoupon($request->coupon)->id ?? null;
 
         try {
+            DB::beginTransaction();
             $customer = Customer::updateOrCreate(
                 ['login' => $data['login']],
                 $data
             );
+            DB::commit();
         } catch (\Illuminate\Database\QueryException $e) {
             if ($e->getCode() === '23000') {
                 $errorMessage = $e->getMessage();
@@ -172,6 +175,10 @@ class RegisterController extends Controller
             Log::error("RegisterController - linha - 138: {$e->getMessage()}");
 
             return back()->withInput()->withErrors(['error' => 'Ocorreu um erro ao processar o registro. Tente novamente mais tarde.']);
+        } catch (\Exception $e) {
+            Log::error("RegisterController - linha - 179: {$e->getMessage()}");
+            DB::rollBack();
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
         }
 
         toastr()->success('Criado com sucesso, Acesse seu email ou faça o login para visualizar sua Assinatura!');
