@@ -39,7 +39,7 @@ class RegisterController extends Controller
         $plan = Plan::find($planId);
         $coupon = $this->getCoupon($couponName);
 
-        if (!$coupon->is_active || !$plan) {
+        if (!$coupon?->is_active || !$plan) {
             return response()->json(['valid' => false, 'message' => 'Cupom inválido.']);
         }
 

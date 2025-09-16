@@ -196,6 +196,7 @@ class CustomerObserver
         $customer = Customer::query()->firstWhere('email', $customer->email);
         $plan = Plan::query()->firstWhere('id', $plan_id);
         $coupon = null;
+        $packagesToCreate = [];
         $value = $plan->value;
         if ($customer->coupon_id !== null) {
             $coupon = Coupon::find($customer->coupon_id);
@@ -203,6 +204,7 @@ class CustomerObserver
 
         if ($coupon) {
             $value = $plan->value - ($plan->value * ($coupon->percent / 100));
+            $packagesToCreate[] = $coupon->cod;
         }
         $order = Order::create([
             'customer_id' => $customer->id,
@@ -218,7 +220,6 @@ class CustomerObserver
         /* if ($order->plan->free_for_days > 0) {
              (new PlanCreate())->handle($customer->viewers_id, 861);
          }*/
-        $packagesToCreate = [];
         foreach ($order->plan->packagePlans as $packagePlan) {
             $pack = Package::find($packagePlan->package_id);
             $packagesToCreate[] = $pack->cod;
