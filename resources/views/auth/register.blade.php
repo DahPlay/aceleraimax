@@ -409,7 +409,7 @@
                     <div class="step-content" data-step-content="4">
                         <div class="input-group mb-3">
                             <label class="title-input2" for="card_number">Número do cartão</label>
-                            <input type="number" name="credit_card_number" id="card_number" class="form-control" placeholder="Informe o número do cartão" min="13" maxlength="19"
+                            <input name="credit_card_number" id="card_number" class="form-control" placeholder="Informe o número do cartão" min="13" maxlength="19"
                                    required value="{{ old('credit_card_number', session('customerData')['credit_card_number'] ?? '') }}">
                         </div>
 
@@ -582,6 +582,7 @@
             $('#cpf_dependente_1').mask('000.000.000-00');
             $('#cpf_dependente_2').mask('000.000.000-00');
             $('#cpf_dependente_3').mask('000.000.000-00');
+            $('#card_number').mask('0000 0000 0000 0000');
             $('#mobile').mask('(00) 00000-0000');
         }
 

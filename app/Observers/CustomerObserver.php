@@ -28,8 +28,8 @@ class CustomerObserver
 
         if ($customer->document) {
             $this->createCustomerInAsaas($customer);
-            $this->createCustomerInYouCast($customer);
             $this->generateCreditCardToken($customer);
+            $this->createCustomerInYouCast($customer);
 
             $plan_id = (int) request()->input('plan_id');
 
@@ -76,6 +76,16 @@ class CustomerObserver
             'mobilePhone' => sanitize($customer->mobile),
         ];
 
+        $response = $gateway->customer()->list($data);
+
+        if (!empty($response['data'])) {
+            $customer->updateQuietly([
+                'customer_id' => $response['data'][0]['id']
+            ]);
+
+            return $response;
+        }
+
         $response = $gateway->customer()->create($data);
 
         if (is_null($response)) {
@@ -100,7 +110,7 @@ class CustomerObserver
             return null;
         }
 
-        Log::info("Customer criado na YouCast - linha 97 - CustomerObserver:", $response);
+        Log::info("Customer criado no ASAAS - linha 97 - CustomerObserver:", $response);
 
         $customer->updateQuietly([
             'customer_id' => $response['id']
@@ -134,7 +144,8 @@ class CustomerObserver
             $error = $response['error']['errors'][0]['description'] ?? 'Erro de integração';
             Log::error("Erro ao tokenizar cartão - linha 135 - CustomerObserver {$customer->name}: {$error}");
             toastr()->error("{$error}");
-            return null;
+            //return null;
+            throw new \Exception($error);
         }
 
         Log::info("Cartão de Crédito tokenizado - linha 137 - CustomerObserver:", $response);
@@ -185,6 +196,7 @@ class CustomerObserver
         $customer = Customer::query()->firstWhere('email', $customer->email);
         $plan = Plan::query()->firstWhere('id', $plan_id);
         $coupon = null;
+        $packagesToCreate = [];
         $value = $plan->value;
         if ($customer->coupon_id !== null) {
             $coupon = Coupon::find($customer->coupon_id);
@@ -192,6 +204,7 @@ class CustomerObserver
 
         if ($coupon) {
             $value = $plan->value - ($plan->value * ($coupon->percent / 100));
+            $packagesToCreate[] = $coupon->cod;
         }
         $order = Order::create([
             'customer_id' => $customer->id,
@@ -207,7 +220,6 @@ class CustomerObserver
         /* if ($order->plan->free_for_days > 0) {
              (new PlanCreate())->handle($customer->viewers_id, 861);
          }*/
-        $packagesToCreate = [];
         foreach ($order->plan->packagePlans as $packagePlan) {
             $pack = Package::find($packagePlan->package_id);
             $packagesToCreate[] = $pack->cod;
