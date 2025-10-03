@@ -21,7 +21,7 @@
                                             <th>Valor</th>
                                             <th>Ativo</th>
                                             <th>Ciclo</th>
-                                            <th>Telemedicina</th>
+                                            <th>Dependentes</th>
                                             <th>Pagamento</th>
                                             <th>Criação</th>
                                             <th>Ações</th>

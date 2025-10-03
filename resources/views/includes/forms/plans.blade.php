@@ -38,7 +38,7 @@
                  style="width: 250px;">
                 <input type="checkbox" class="custom-control-input overdue" name="is_active_telemedicine" id="is_active_telemedicine"
                         {{ $plan->is_active_telemedicine ? 'checked' : '' }}>
-                <label class="custom-control-label font-weight-normal ml-2" for="is_active_telemedicine">Telemedicina</label>
+                <label class="custom-control-label font-weight-normal ml-2" for="is_active_telemedicine">Dependentes</label>
             </div>
         </div>
     </div>
