@@ -76,6 +76,8 @@ return [
     'text_button_home_menu_color_cadastre' => env('TEXT_BUTTON_HOME_MENU_COLOR_CADASTRE', 'rgb(253, 253, 253)'),
     'background_button_home_menu_color_experimente' => env('BACKGROUND_BUTTON_HOME_MENU_COLOR_EXPERIMENTE', 'rgb(48, 101, 207)'),
     'text_button_home_menu_color_experimente' => env('TEXT_BUTTON_HOME_MENU_COLOR_EXPERIMENTE', 'rgb(253, 253, 253)'),
+    'logo_home_width' => env('LOGO_HOME_WIDTH', '250'),
+    'text_menu_6_logo_home_width' => env('TEXT_MENU_6_LOGO_HOME_WIDTH', '250'),
 
     'title_home_color_capa' => env('TITLE_HOME_COLOR_CAPA', 'rgb(255, 255, 255)'),
     'titulo_home_capa' => env('TITULO_HOME_CAPA', 'Todos os conteúdos aqui'),
@@ -85,6 +87,7 @@ return [
     'text_home' => env('TEXT_HOME', 'rgb(48, 101, 207)'),
     'number_home' => env('NUMBER_HOME', 'rgba(19, 66, 160, 0.47)'),
     'icone_menu_mobile' => env('ICONE_MENU_MOBILE', 'rgb(255, 255, 255)'),
+    'home_simple_image' => env('HOME_SIMPLE_IMAGE', '/Auth-Panel/dist/img/home_simple_image.jpg'),
 
     'text_menu_1' => env('TEXT_MENU_1', 'Planos'),
     'text_menu_2' => env('TEXT_MENU_2', 'Sobre a Plataforma'),

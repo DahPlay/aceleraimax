@@ -45,7 +45,7 @@
             </div>
 
             <div class="align-items-center container-nav d-flex justify-content-between position-absolute">
-                <img src="{{ config('custom.logo_1') }}">
+                <img src="{{ config('custom.logo_1') }}" style="width: {{ config('custom.logo_home_width') }}px;">
 
                 <div class="d-flex flex-column d-lg-none menu" onclick="toggleMenu()">
                     <div class="menu-bar" style="background-color: {{ config('custom.icone_menu_mobile') }}"></div>
@@ -81,7 +81,7 @@
                             style="background-color: {{ config('custom.background_home_menu_color') }}; border-radius: 10px;">
                             <a href="{{ config('custom.portal_link') }}" target="_blank" class="d-flex align-items-center"
                                 style="color: {{ config('custom.text_home_menu_color') }}; font-weight: bold;">
-                                Acessar <img src="{{ config('custom.logo_1') }}" style="width: 30px; margin-right: 8px;"
+                                Acessar <img src="{{ config('custom.logo_1') }}" style="width: {{ config('custom.text_menu_6_logo_home_width') }}px; margin-right: 8px;"
                                     alt="Logo">
 
                             </a>
@@ -287,7 +287,7 @@
         </section> <!-- OCULTAR -->
     @else
         <div class="banner-container">
-            <img src="https://www.bitmag.com.br/wp-content/uploads/2024/07/tv-paga.jpg" alt="Imagem de fundo"
+            <img src="{{ config('custom.home_simple_image') }}" alt="Imagem de fundo"
                 class="banner-background">
 
             <div class="banner-overlay 
@@ -303,7 +303,7 @@
                 <a href="{{ config('custom.portal_link') }}" target="_blank" rel="noopener noreferrer"
                     class="banner-access-link d-flex align-items-center">
                     <span style="margin-right: 8px;">Acessar</span>
-                    <img src="{{ config('custom.logo_1') }}" style="width: 30px;" alt="Logo">
+                    <img src="{{ config('custom.logo_1') }}" style="width: {{ config('custom.text_menu_6_logo_home_width') }}px;" alt="Logo">
                 </a>
             </div>
 
