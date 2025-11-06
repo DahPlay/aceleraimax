@@ -47,7 +47,7 @@ class PlanController extends Controller
                 'plans.priority',
                 'plans.is_active_telemedicine',
             ])
-            ->where('hidden', '!=', 'Sim');  // <-- adiciona esse filtro aqui
+            ->where('hidden', '!=', 'Sim');
 
         return DataTables::of($plans)
             ->addColumn('checkbox', function ($plan) {
@@ -467,6 +467,4 @@ class PlanController extends Controller
             'message' => 'Planos ocultados com sucesso.'
         ]);
     }
-
-
 }

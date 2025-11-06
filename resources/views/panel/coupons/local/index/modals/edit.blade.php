@@ -28,13 +28,17 @@
 
         var id = $("#id").val();
 
+        const formData = getFormData();
+
         $.ajax({
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                type: 'PUT',
+                type: 'POST',
                 url: '{{ $routeCrud }}/update/' + id,
-                data: $(this).serialize()
+                data: formData,
+                processData: false,
+                contentType: false,
             })
             .done(function(data) {
 

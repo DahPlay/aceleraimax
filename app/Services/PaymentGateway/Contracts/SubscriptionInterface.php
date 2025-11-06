@@ -14,4 +14,6 @@ interface SubscriptionInterface
     public function update(int|string $id, array $data): array;
 
     public function delete(int|string $id): array;
+
+    public function updateCreditCard(int|string $subscriptionId, string $creditCardToken, string $customerIp): array;
 }

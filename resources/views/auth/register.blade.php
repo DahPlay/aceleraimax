@@ -119,13 +119,15 @@
         background: #f5f5f5;
     }
 
-    .btn-next, .btn-submit {
+    .btn-next,
+    .btn-submit {
         background: {{ config('custom.button_color_entrar') }};
         color: white;
         margin-left: auto;
     }
 
-    .btn-next:hover, .btn-submit:hover {
+    .btn-next:hover,
+    .btn-submit:hover {
         opacity: 0.9;
     }
 
@@ -194,7 +196,7 @@
 </style>
 
 @section('content')
-    <div class="register-box flex-column" >
+    <div class="register-box flex-column">
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">
@@ -206,7 +208,7 @@
         @endif
 
         <div class="card-register m-auto"
-             style="background-color: {{ config('custom.background_form') }};
+            style="background-color: {{ config('custom.background_form') }};
             color: {{ config('custom.text_color_recuperar') }};
             border: 4px solid {{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">
 
@@ -244,7 +246,7 @@
                     @csrf
 
                     <input type="hidden" name="source" id="source" class="form-control" required
-                           value="{{ old('source', session('customerData')['source'] ?? '') }}"
+                        value="{{ old('source', session('customerData')['source'] ?? '') }}"
                         {{ isset(session('customerData')['source']) ? 'readonly' : '' }}>
 
                     <!-- Step 1: Plan Selection -->
@@ -253,25 +255,28 @@
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <label class="title-input2 mb-0" for="plan">Planos *</label>
                                 <button type="button" class="btn btn-primary btn-view title-input2" data-toggle="modal"
-                                        data-target="#modalPlanos">Ver planos
+                                    data-target="#modalPlanos">Ver planos
                                 </button>
                             </div>
 
                             <select id="plan_id" class="form-control" name="plan_id" required>
                                 <option value="">Selecione...</option>
                                 @foreach ($plans as $plan)
-                                    <option value="{{ $plan->id }}" data-telemedicine="{{ $plan->is_active_telemedicine }}" @selected($plan->id == $planId)>
+                                    <option value="{{ $plan->id }}"
+                                        data-telemedicine="{{ $plan->is_active_telemedicine }}"
+                                        @selected($plan->id == $planId)>
                                         {{ $plan->name . ' - ' . number_format($plan->value, 2, ',', '.') }}
-                                        
+
                                     </option>
                                 @endforeach
                             </select>
 
                             <div class="form-group mt-3">
-                                <label for="coupon" style="color:{{ config('custom.text_color_form') }}">Cupom de Desconto</label>
+                                <label for="coupon" style="color:{{ config('custom.text_color_form') }}">Cupom de
+                                    Desconto</label>
                                 <div class="d-flex gap-2">
                                     <input type="text" id="coupon" name="coupon" class="form-control"
-                                           placeholder="Digite seu cupom">
+                                        placeholder="Digite seu cupom">
                                     <button type="button" id="applyCoupon" class="btn btn-primary">Aplicar</button>
                                 </div>
                                 <small id="couponFeedback" class="form-text text-danger"></small>
@@ -279,7 +284,8 @@
                         </div>
 
                         <div class="navigation-buttons">
-                            <button type="button" class="btn btn-nav btn-next" data-next="2" style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Próximo</button>
+                            <button type="button" class="btn btn-nav btn-next" data-next="2"
+                                style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Próximo</button>
                         </div>
                     </div>
 
@@ -288,20 +294,20 @@
                         <div class="input-group mb-3">
                             <label class="title-input2" for="name">Qual seu nome completo *</label>
                             <input type="text" name="name" id="name" class="form-control"
-                                   placeholder="Digite seu nome completo *" required
-                                   value="{{ old('name', session('customerData')['name'] ?? '') }}">
+                                placeholder="Digite seu nome completo *" required
+                                value="{{ old('name', session('customerData')['name'] ?? '') }}">
                         </div>
 
                         @error('name')
-                        <span class="text-danger">{{ $message }}</span>
-                        <hr>
+                            <span class="text-danger">{{ $message }}</span>
+                            <hr>
                         @enderror
 
                         <div class="input-group mb-3">
                             <label class="title-input2" for="document">CPF *</label>
-                            <input type="text" @error('document') has-error @enderror value="{{ old('document') ?? '' }}"
-                                   name="document" id="document" class="form-control" placeholder="Digite seu cpf *"
-                                   required>
+                            <input type="text" @error('document') has-error @enderror
+                                value="{{ old('document') ?? '' }}" name="document" id="document" class="form-control"
+                                placeholder="Digite seu cpf *" required>
                         </div>
 
                         <div id="dependentes-fields" style="display:none;">
@@ -323,36 +329,39 @@
                         </div>
 
                         @error('document')
-                        <span class="text-danger">{{ $message }}</span>
-                        <hr>
+                            <span class="text-danger">{{ $message }}</span>
+                            <hr>
                         @enderror
 
                         <div class="input-group mb-3">
                             <label class="title-input2" for="mobile">Digite seu Celular *</label>
                             <input type="text" @error('mobile') has-error @enderror value="{{ old('mobile') ?? '' }}"
-                                   name="mobile" id="mobile" class="form-control" placeholder="(00) 00000-0000" required>
+                                name="mobile" id="mobile" class="form-control" placeholder="(00) 00000-0000"
+                                required>
                         </div>
 
                         @error('mobile')
-                        <span class="text-danger">{{ $message }}</span>
-                        <hr>
+                            <span class="text-danger">{{ $message }}</span>
+                            <hr>
                         @enderror
 
                         <div class="input-group mb-3">
                             <label class="title-input2" for="email">Digite seu email *</label>
                             <input type="email" name="email" id="email" class="form-control"
-                                   placeholder="meuemail@mail.com" required
-                                   value="{{ old('email', session('customerData')['email'] ?? '') }}">
+                                placeholder="meuemail@mail.com" required
+                                value="{{ old('email', session('customerData')['email'] ?? '') }}">
                         </div>
 
                         @error('email')
-                        <span class="text-danger">{{ $message }}</span>
-                        <hr>
+                            <span class="text-danger">{{ $message }}</span>
+                            <hr>
                         @enderror
 
                         <div class="navigation-buttons">
-                            <button type="button" class="btn btn-nav btn-back" data-prev="1" style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Voltar</button>
-                            <button type="button" class="btn btn-nav btn-next" data-next="3" style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Próximo</button>
+                            <button type="button" class="btn btn-nav btn-back" data-prev="1"
+                                style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Voltar</button>
+                            <button type="button" class="btn btn-nav btn-next" data-next="3"
+                                style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Próximo</button>
                         </div>
                     </div>
 
@@ -360,13 +369,14 @@
                     <div class="step-content" data-step-content="3">
                         <div class="input-group mb-3">
                             <label class="title-input2" for="usuario">Digite seu usuário *</label>
-                            <input type="text" name="login" id="usuario" class="form-control" placeholder="Usuário *"
-                                   required value="{{ old('login', session('customerData')['login'] ?? '') }}">
+                            <input type="text" name="login" id="usuario" class="form-control"
+                                placeholder="Usuário *" required
+                                value="{{ old('login', session('customerData')['login'] ?? '') }}">
                         </div>
 
                         @error('login')
-                        <span class="text-danger">{{ $message }}</span>
-                        <hr>
+                            <span class="text-danger">{{ $message }}</span>
+                            <hr>
                         @enderror
 
                         @if (
@@ -375,33 +385,36 @@
                             <div class="input-group mb-3">
                                 <label class="title-input2" for="password">Crie sua senha *</label>
                                 <input type="password" @error('password') has-error @enderror
-                                value="{{ session()->has('authenticate') ? session('customerData')['password'] : '' }}"
-                                       name="password" id="password" class="form-control" placeholder="Crie uma senha forte"
-                                       required {{ session()->has('authenticate') ? 'readonly' : '' }}>
+                                    value="{{ session()->has('authenticate') ? session('customerData')['password'] : '' }}"
+                                    name="password" id="password" class="form-control"
+                                    placeholder="Crie uma senha forte" required
+                                    {{ session()->has('authenticate') ? 'readonly' : '' }}>
                             </div>
 
                             @error('password')
-                            <span class="text-danger">{{ $message }}</span>
-                            <hr>
+                                <span class="text-danger">{{ $message }}</span>
+                                <hr>
                             @enderror
 
                             <div class="input-group mb-3">
                                 <label class="title-input2" for="password_confirmation">Confirmação de senha *</label>
                                 <input type="password" @error('password_confirmation') has-error @enderror
-                                value="{{ old('password_confirmation') ?? '' }}" name="password_confirmation"
-                                       id="password_confirmation" class="form-control" placeholder="Repita sua senha"
-                                       required>
+                                    value="{{ old('password_confirmation') ?? '' }}" name="password_confirmation"
+                                    id="password_confirmation" class="form-control" placeholder="Repita sua senha"
+                                    required>
                             </div>
 
                             @error('password_confirmation')
-                            <span class="text-danger">{{ $message }}</span>
-                            <hr>
+                                <span class="text-danger">{{ $message }}</span>
+                                <hr>
                             @enderror
                         @endif
 
                         <div class="navigation-buttons">
-                            <button type="button" class="btn btn-nav btn-back" data-prev="2" style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Voltar</button>
-                            <button type="button" class="btn btn-nav btn-next" data-next="4" style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Próximo</button>
+                            <button type="button" class="btn btn-nav btn-back" data-prev="2"
+                                style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Voltar</button>
+                            <button type="button" class="btn btn-nav btn-next" data-next="4"
+                                style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Próximo</button>
                         </div>
                     </div>
 
@@ -409,50 +422,73 @@
                     <div class="step-content" data-step-content="4">
                         <div class="input-group mb-3">
                             <label class="title-input2" for="card_number">Número do cartão</label>
-                            <input name="credit_card_number" id="card_number" class="form-control" placeholder="Informe o número do cartão" min="13" maxlength="19"
-                                   required value="{{ old('credit_card_number', session('customerData')['credit_card_number'] ?? '') }}">
+                            <input name="credit_card_number" id="card_number" class="form-control"
+                                placeholder="Informe o número do cartão" min="13" maxlength="19" required
+                                value="{{ old('credit_card_number', session('customerData')['credit_card_number'] ?? '') }}">
                         </div>
 
                         <div class="input-group mb-3">
                             <label class="title-input2" for="card_name">Nome do titular do cartão</label>
-                            <input type="text" name="credit_card_name" id="card_name" class="form-control" placeholder="Nome do titular do cartão"
-                                   required value="{{ old('credit_card_name', session('customerData')['credit_card_name'] ?? '') }}">
+                            <input type="text" name="credit_card_name" id="card_name" class="form-control"
+                                placeholder="Nome do titular do cartão" required
+                                value="{{ old('credit_card_name', session('customerData')['credit_card_name'] ?? '') }}">
                         </div>
 
                         <div class="input-group mb-3">
                             <label class="title-input2" for="card_expiry_month">Mês</label>
-                            <input type="text" name="credit_card_expiry_month" id="card_expiry_month" class="form-control form-group" placeholder="00" min="2" maxlength="2"
-                                   required value="{{ old('credit_card_expiry_month', session('customerData')['credit_card_expiry_month'] ?? '') }}">
+                            <input type="text" name="credit_card_expiry_month" id="card_expiry_month"
+                                class="form-control form-group" placeholder="00" min="2" maxlength="2" required
+                                value="{{ old('credit_card_expiry_month', session('customerData')['credit_card_expiry_month'] ?? '') }}">
 
                             <label class="title-input2" for="card_expiry_year">Ano</label>
-                            <input type="text" name="credit_card_expiry_year" id="card_expiry_year" class="form-control form-group" placeholder="0000" minlength="4" maxlength="4"
-                                   required value="{{ old('credit_card_expiry_year', session('customerData')['credit_card_expiry_year'] ?? '') }}">
+                            <input type="text" name="credit_card_expiry_year" id="card_expiry_year"
+                                class="form-control form-group" placeholder="0000" minlength="4" maxlength="4"
+                                required
+                                value="{{ old('credit_card_expiry_year', session('customerData')['credit_card_expiry_year'] ?? '') }}">
                         </div>
 
                         <div class="input-group mb-3">
                             <label class="title-input2" for="card_ccv">CVV</label>
-                            <input type="text" name="credit_card_ccv" id="card_ccv" class="form-control form-group" placeholder="000" minlength="3" maxlength="4"
-                                   required value="{{ old('credit_card_ccv', session('customerData')['credit_card_ccv'] ?? '') }}">
+                            <input type="text" name="credit_card_ccv" id="card_ccv" class="form-control form-group"
+                                placeholder="000" minlength="3" maxlength="4" required
+                                value="{{ old('credit_card_ccv', session('customerData')['credit_card_ccv'] ?? '') }}">
                         </div>
 
                         @error('login')
-                        <span class="text-danger">{{ $message }}</span>
-                        <hr>
+                            <span class="text-danger">{{ $message }}</span>
+                            <hr>
                         @enderror
 
 
 
                         <div class="navigation-buttons">
-                            <button type="button" class="btn btn-nav btn-back" data-prev="3" style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Voltar</button>
-                            <button type="submit" class="btn btn-nav btn-submit" style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Finalizar Cadastro</button>
+                            <button type="button" class="btn btn-nav btn-back" data-prev="3"
+                                style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Voltar</button>
+                            <button type="submit" class="btn btn-nav btn-submit"
+                                style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Finalizar
+                                Cadastro</button>
+                        </div>
+
+                        <div class="d-flex flex-row input-group mb-2 mt-4">
+                            <input type="checkbox" name="terms" id="terms" placeholder="000" minlength="3"
+                                maxlength="4" required="" value="">
+                            <span class="text-white ml-2">Aceitar termos e condições</span>
+                            <a href="#" class="ml-2">visualizar termo.</a>
                         </div>
                     </div>
+
+                    @php
+                        $baseUrl = config('app.url');
+                        if (app()->environment('local')) {
+                            $baseUrl .= ':8000';
+                        }
+                    @endphp
 
                     <div class="footer-links">
                         <a href="{{ route('login') }}">
                             <i class="fa fa-user-plus mr-2"></i> Já tenho conta
                         </a>
-                        <a href="{{ url('/') }}">
+                        <a href="{{ $baseUrl }}">
                             <i class="fa fa-home mr-2"></i> Voltar para Home
                         </a>
                     </div>
@@ -461,23 +497,24 @@
         </div>
     </div>
     <footer class="section-container d-flex flex-column align-items-center footer-register"
-            style="background-color: {{ config('custom.background_baseboard') }};">
+        style="background-color: {{ config('custom.background_baseboard') }};">
         <p>{{ config('custom.text_baseboard') }}</p>
 
-        <div class="d-flex align-items-center justify-content-center w-100 position-relative container-media flex-column flex-sm-row">
+        <div
+            class="d-flex align-items-center justify-content-center w-100 position-relative container-media flex-column flex-sm-row">
             <div class="social-media d-flex justify-content-center">
                 <div class="container-social-media"
-                     style="background-color: {{ config('custom.background_social_media') }};">
+                    style="background-color: {{ config('custom.background_social_media') }};">
                     <a href="{{ config('custom.link_social_media_1') }}"><img
                             src="{{ config('custom.image_social_media_1') }}" alt=""></a>
                 </div>
                 <div class="container-social-media"
-                     style="background-color: {{ config('custom.background_social_media') }};">
+                    style="background-color: {{ config('custom.background_social_media') }};">
                     <a href="{{ config('custom.link_social_media_2') }}"><img
                             src="{{ config('custom.image_social_media_2') }}" alt=""></a>
                 </div>
                 <div class="container-social-media"
-                     style="background-color: {{ config('custom.background_social_media') }};">
+                    style="background-color: {{ config('custom.background_social_media') }};">
                     <a href="{{ config('custom.link_social_media_3') }}"><img
                             src="{{ config('custom.image_social_media_3') }}" alt=""></a>
                 </div>
@@ -502,24 +539,26 @@
                             @foreach ($plans as $plan)
                                 <div class="col-md-4 mb-4">
                                     <div class="plan-card {{ $plan->is_best_seller ? 'best-seller' : '' }}">
-                                        @if($plan->is_best_seller)
+                                        @if ($plan->is_best_seller)
                                             <div class="best-seller-badge">Mais vendido</div>
                                         @endif
                                         <h4>{{ $plan->name }}</h4>
                                         <div class="plan-price">R$ {{ number_format($plan->value, 2, ',', '.') }}</div>
                                         <ul class="plan-features">
-                                            @foreach($plan->benefits as $benefit)
+                                            @foreach ($plan->benefits as $benefit)
                                                 <li>{{ $benefit->description }}</li>
                                             @endforeach
                                         </ul>
-                                        <button type="button" class="btn btn-primary w-100" onclick="selectPlan({{ $plan->id }})" data-dismiss="modal">
+                                        <button type="button" class="btn btn-primary w-100"
+                                            onclick="selectPlan({{ $plan->id }})" data-dismiss="modal">
                                             Assinar
                                         </button>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
-                        <p class="text-center mt-4">Curta nossas séries, filmes e conteúdos exclusivos feitos para você!</p>
+                        <p class="text-center mt-4">Curta nossas séries, filmes e conteúdos exclusivos feitos para você!
+                        </p>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -533,12 +572,12 @@
 
 @section('javascriptLocal')
     <script>
-        $(function () {
+        $(function() {
             initSelects2();
             initMasks();
             const $dependentesFields = $('#dependentes-fields');
 
-            $('#plan_id').on('change', function () {
+            $('#plan_id').on('change', function() {
                 const planId = $(this).val();
                 const telemedicine = $(this).find(':selected').data('telemedicine');
 
@@ -546,13 +585,13 @@
                 // console.log('Is active telemedicine:', telemedicine);
 
                 if (telemedicine == 1) {
-                    $dependentesFields.show();                    
+                    $dependentesFields.show();
                     $dependentesFields.show();
                 } else {
-                    $dependentesFields.hide();                    
+                    $dependentesFields.hide();
                     $dependentesFields.hide();
                     // opcional: limpar os campos ao esconder
-                    $dependentesFields.find('input').val('');                    
+                    $dependentesFields.find('input').val('');
                     $dependentesFields.find('input').val('');
                 }
             });
@@ -560,14 +599,14 @@
             // Se o select já vier com valor selecionado ao carregar a página
             const initialTelemedicine = $('#plan_id').find(':selected').data('telemedicine');
             if (initialTelemedicine == 1) {
-                $dependentesFields.show();                
+                $dependentesFields.show();
                 $dependentesFields.show();
             } else {
-                $dependentesFields.hide();                
+                $dependentesFields.hide();
                 $dependentesFields.hide();
             }
             initStepNavigation();
-            
+
         });
 
         function initSelects2() {
@@ -618,7 +657,7 @@
             $('#plan_id').val(planId).trigger('change');
         }
 
-        document.getElementById('applyCoupon').addEventListener('click', function () {
+        document.getElementById('applyCoupon').addEventListener('click', function() {
             const coupon = document.getElementById('coupon').value;
             const planId = document.querySelector('select[name="plan_id"]').value;
 
@@ -628,13 +667,17 @@
             }
 
             fetch('/validate-coupon', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-                body: JSON.stringify({ coupon: coupon, plan_id: planId }),
-            })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        coupon: coupon,
+                        plan_id: planId
+                    }),
+                })
                 .then(response => response.json())
                 .then(data => {
                     const feedback = document.getElementById('couponFeedback');
@@ -643,9 +686,11 @@
                         feedback.classList.remove('text-danger');
                         feedback.classList.add('text-success');
 
-                        const selectedOption = document.querySelector(`select[name="plan_id"] option[value="${planId}"]`);
+                        const selectedOption = document.querySelector(
+                            `select[name="plan_id"] option[value="${planId}"]`);
                         if (selectedOption) {
-                            selectedOption.innerText = `${selectedOption.innerText.split(' - ')[0]} - R$ ${data.discounted_value}`;
+                            selectedOption.innerText =
+                                `${selectedOption.innerText.split(' - ')[0]} - R$ ${data.discounted_value}`;
                         }
 
                     } else {

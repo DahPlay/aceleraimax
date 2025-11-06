@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CouponRequest;
 use App\Models\Coupon;
 use App\Models\Package;
+use App\Services\CouponService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -18,7 +19,7 @@ class CouponController extends Controller
 
     public function __construct(Coupon $coupon, Request $request)
     {
-        $this->middleware('can:admin');
+        $this->middleware('can:admin')->except('validateCoupon');
 
         $this->model = $coupon;
         $this->request = $request;
@@ -66,10 +67,14 @@ class CouponController extends Controller
 
     public function store(CouponRequest $request): JsonResponse
     {
+        $isActive = match ($request->validated()['is_active']) {
+            '1' => true,
+            '0' => false,
+        };
+
         $data = $request->validated();
 
-        $data['is_active'] = isset($data['is_active']) ? 1 : 0;
-
+        $data['is_active'] = $isActive;
 
         $coupon = $this->model->create($data);
 
@@ -105,7 +110,7 @@ class CouponController extends Controller
     public function update(CouponRequest $request): JsonResponse
     {
         $isActive = match ($request->validated()['is_active']) {
-            'on' => true,
+            '1' => true,
             '0' => false,
         };
 
@@ -208,5 +213,15 @@ class CouponController extends Controller
             'status' => '200',
             'message' => 'Ação executada com sucesso!'
         ]);
+    }
+
+    public function validateCoupon(Request $request, CouponService $couponService)
+    {
+        $data = $couponService->validate(
+            $request->input('coupon'),
+            (int) $request->input('plan_id')
+        );
+
+        return response()->json($data);
     }
 }

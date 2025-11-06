@@ -64,16 +64,4 @@ class User extends Authenticatable
     {
         $this->notify(new ResetPasswordNotification($token));
     }
-
-    public function hasPlan(int $planId): bool
-    {
-        $order = Order::where('customer_id', $this->customer->id)
-            ->where('plan_id', $planId)
-            ->get();
-
-        if ($order->count() > 0) {
-            return true;
-        }
-        return false;
-    }
 }

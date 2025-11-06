@@ -2,6 +2,7 @@
     <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="true">
         <i class="fa fa fa-ellipsis-v text-dark"></i>
     </a>
+
     <div class="dropdown-menu dropdown-menu-lg">
         @can('user')
             <a href='javascript:;' class='btn-change btn btn-danger dropdown-item' data-id='{{ $order->id }}'
@@ -14,6 +15,13 @@
                 <span class="ml-2">Trocar de plano</span>
             </a>
         @endcan
+
+        <a href='javascript:;' class='btn-show btn btn-info dropdown-item' data-id='{{ $order->id }}'
+           data-url='/{{ $routeCrud }}/showCards'>
+            <i class='fa fa-money-check'></i>
+            <span class="ml-2">Trocar de cartão</span>
+        </a>
+
         <a href='javascript:;' class='btn-show btn btn-info dropdown-item' data-id='{{ $order->id }}'
            data-url='/{{ $routeCrud }}/show'>
             <i class='fa fa-eye'></i>

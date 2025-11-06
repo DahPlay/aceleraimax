@@ -21,8 +21,8 @@ Auth::routes(['register' => false]);
 
 Route::get('/register/{planId?}', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
-Route::post('/validate-coupon', [RegisterController::class, 'validateCoupon'])
-    ->name('validateCoupon');
+Route::post('/validate-coupon', [CouponController::class, 'validateCoupon'])
+    ->name('validate.coupon');
 
 /*Route::get('/teste', function () {
     Model::withoutEvents(function () {
@@ -83,8 +83,8 @@ Route::middleware('auth')->name('panel.')->group(function () {
         Route::get('/accesses', [AccessController::class, 'index'])
             ->name('index')
             ->setWheres([
-                'titleBreadCrumb' => 'Lista de Assinaturas',
-                'title' => 'Lista de Assinaturas | ' . config('custom.project_name'),
+                'titleBreadCrumb' => 'Lista de Perfis',
+                'title' => 'Lista de Perfis | ' . config('custom.project_name'),
             ]);
 
         Route::get('/accesses/loadDatatable', [AccessController::class, 'loadDatatable'])->name('loadDatatable');
@@ -149,11 +149,9 @@ Route::middleware('auth')->name('panel.')->group(function () {
             ])->middleware('can:admin');
 
         Route::get('/users/loadDatatable', [UserController::class, 'loadDatatable'])->name('loadDatatable')->middleware('can:admin');
-        ;
 
         Route::post('/users/store', [UserController::class, 'store'])
             ->name('store')->middleware('can:admin');
-        ;
 
         // Post por causa do envio da imagem via ajax
         Route::post('/users/update/{id}', [UserController::class, 'update'])
@@ -161,24 +159,19 @@ Route::middleware('auth')->name('panel.')->group(function () {
 
         Route::delete('/users/destroy/{id}', [UserController::class, 'destroy'])
             ->name('destroy')->middleware('can:admin');
-        ;
 
         Route::delete('/users/destroyAll', [UserController::class, 'destroyAll'])
             ->name('destroyAll')->middleware('can:admin');
-        ;
 
         Route::post('/users/removeImage', [UserController::class, 'removeImage'])
             ->name('removeImage')->middleware('can:admin');
-        ;
 
         // Modais
         Route::get('/users/create', [UserController::class, 'create'])
             ->name('create')->middleware('can:admin');
-        ;
 
         Route::get('/users/delete/{id}', [UserController::class, 'delete'])
             ->name('delete')->middleware('can:admin');
-        ;
 
         Route::get('/users/edit/{id}', [UserController::class, 'edit'])
             ->name('edit');
@@ -286,7 +279,7 @@ Route::middleware('auth')->name('panel.')->group(function () {
         Route::post('/coupons/store', [CouponController::class, 'store'])
             ->name('store');
 
-        Route::put('/coupons/update/{id}', [CouponController::class, 'update'])
+        Route::post('/coupons/update/{id}', [CouponController::class, 'update'])
             ->name('update');
 
         Route::delete('/coupons/destroy/{id}', [CouponController::class, 'destroy'])
@@ -375,6 +368,9 @@ Route::middleware('auth')->name('panel.')->group(function () {
         Route::post('orders/changePlanStore', [OrderController::class, 'changePlanStore'])
             ->name('changePlanStore');
 
+        Route::put('/orders/updateCard/{order}', [OrderController::class, 'updateCard'])
+            ->name('updateCard');
+
         // Modais
         Route::get('/orders/create', [OrderController::class, 'create'])
             ->name('create');
@@ -396,9 +392,13 @@ Route::middleware('auth')->name('panel.')->group(function () {
 
         Route::get('/orders/changePlan/{id}', [OrderController::class, 'changePlan'])
             ->name('changePlan');
+
+        Route::get('/orders/showCards/{id}', [OrderController::class, 'showCards'])
+            ->name('showCards');
+
+        Route::get('/order/changeCard/{id_order}', [OrderController::class, 'changeCard'])
+            ->name('changeCard');
     });
-
-
 });
 
 
@@ -429,6 +429,3 @@ Route::get('/api/fatura-atual', function () {
         'boleto_url' => $boletoUrl,
     ]);
 });
-
-
-

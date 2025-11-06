@@ -43,6 +43,7 @@ class Order extends Model
         'deleted_date',
         'original_plan_value',
         'boleto_url',
+        'consent_id',
     ];
 
     protected function cycle(): Attribute
@@ -86,5 +87,22 @@ class Order extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    public function hasPlan(int $planId, int $customer_id): bool
+    {
+        $order = Order::where('customer_id', $customer_id)
+            ->where('plan_id', $planId)
+            ->get();
+
+        if ($order->count() > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public function consent()
+    {
+        return $this->belongsTo(UserConsent::class);
     }
 }

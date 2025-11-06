@@ -13,7 +13,7 @@ class CustomerAuthenticate
     {
         $data = [
             'data' => [
-                'vendors_id' => 44,
+                'vendors_id' => 1,
                 'login' => $login,
                 'password' => $password,
             ]

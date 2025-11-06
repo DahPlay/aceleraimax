@@ -55,8 +55,9 @@
         formData.append('id', $("#id").val());
         formData.append('name', $("#name").val());
         formData.append('percent', $("#percent").val());
-        formData.append('obs', $("#observation").val());
+        formData.append('observation', $("#observation").val());
         formData.append('percent', $("#percent").val());
+        formData.append('cod', $("#cod").val());
         formData.append('is_active', $("#is_active").is(':checked') ? 1 : 0);
 
         return formData;

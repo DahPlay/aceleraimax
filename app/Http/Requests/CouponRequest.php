@@ -15,7 +15,7 @@ class CouponRequest extends FormRequest
             'percent' => ['required', 'numeric', 'min:0', 'max:100'],
             'cod' => ['required','numeric'],
             'observation' => ['nullable'],
-            'is_active' => ['filled'],
+            'is_active' => ['filled', 'boolean'],
         ];
     }
 

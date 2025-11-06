@@ -33,6 +33,9 @@
                 openModal(this, e, 'modal-lg');
             });
 
+            $(document).on('click', ".btn-change-card", function(e) {
+                openModalOut(this, e, "change-card")
+            });
         });
 
         function removeImage() {
@@ -196,6 +199,68 @@
             );
             tableManage.render();
             tableManage.filter(true, '#table', ['', 'Ações']);
+        }
+
+        function openModalOut(button, e, modal) {
+            e.preventDefault();
+
+            var url = $(button).data('url');
+            var id = $(button).data('id');
+            var patient_id = $(button).data('patient-id');
+            var modal = "#modal-" + modal;
+
+            // Pega o routeCrud atual da url
+            var routeCrud = url.split("/")[1];
+            // Monta a rota de cadastro
+            routeCrud = '/' + routeCrud + '/cadastro';
+
+            var exceptionsList = [
+                '/transaction/cadastroReceita',
+            ];
+
+            // Compara a rota atual com a rota de cadastro
+            if (
+                url != routeCrud &&
+                !inArray(url, exceptionsList)
+            ) {
+                if (patient_id != undefined) {
+                    url = url + '/' + id + '/' + patient_id;
+                } else {
+                    url = url + '/' + id;
+                }
+            } else {
+                if (
+                    !inArray(url, exceptionsList)
+                ) {
+                    url = routeCrud;
+                }
+            }
+
+            $.ajax({
+                    url: url,
+                    method: 'GET',
+                })
+                .done(function(response) {
+                    if (response.status && response.status == 403) {
+                        Object.keys(response.errors).forEach((item) => {
+                            $("#" + item).addClass('is-invalid');
+                            toastMessage('fa fa-exclamation', 'bg-warning', 'Ops, permissão de acesso...',
+                                response
+                                .errors[item]);
+                        });
+                    } else {
+                        $(modal).modal({
+                            keyboard: true,
+                            show: true
+                        });
+
+                        var z_index = modalOpenToModal();
+
+                        $(modal).css('z-index', ++z_index);
+
+                        $(modal + ' .modal-dialog').html(response);
+                    }
+                })
         }
     </script>
 @endsection

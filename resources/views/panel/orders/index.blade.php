@@ -39,6 +39,13 @@
             </div>
         </div>
     </div>
+
+    <div class="modal modal-change-card fade" id="modal-change-card" name="modal" tabindex="-1" role="dialog"
+        aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+
+        </div>
+    </div>
 @endsection
 
 @includeIf("$routeAmbient.$routeCrud.local.index.head")

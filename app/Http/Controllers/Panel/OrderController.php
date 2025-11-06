@@ -6,6 +6,9 @@ use App\Enums\CycleAsaasEnum;
 use App\Enums\PaymentStatusOrderAsaasEnum;
 use App\Enums\StatusOrderAsaasEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Coupon;
+use App\Models\Customer;
+use App\Models\CustomerCreditCard;
 use App\Models\Order;
 use App\Models\Package;
 use App\Models\Plan;
@@ -22,6 +25,7 @@ use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 use App\Services\PaymentGateway\Connectors\Asaas\Subscription;
 use App\Services\PaymentGateway\Contracts\AdapterInterface;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -58,7 +62,7 @@ class OrderController extends Controller
                 'orders.payment_status',
                 'orders.created_at',
                 'orders.payment_asaas_id',
-                'coupons.name as coupon_name', // <- nome do cupom
+                'coupons.name as coupon_name',
             ]);
 
         return DataTables::of($orders)
@@ -155,7 +159,7 @@ class OrderController extends Controller
                 return $order->created_at ? date('d/m/Y H:i:s', strtotime($order->created_at)) : 'Sem data';
             })
             ->filterColumn('created_at', function ($query, $value) {
-                $query->whereRaw("DATE_FORMAT(created_at,'%d/%m/%Y %H:%i:%s') like ?", ["%$value%"]);
+                $query->whereRaw("DATE_FORMAT(orders.created_at,'%d/%m/%Y %H:%i:%s') like ?", ["%$value%"]);
             })
             ->addColumn('action', function ($order) {
                 $loggedId = auth()->user()->id;
@@ -213,8 +217,8 @@ class OrderController extends Controller
                 ]
             ]);
         }
-
     }
+
 
     public function edit($id): View
     {
@@ -383,40 +387,65 @@ class OrderController extends Controller
 
     public function changePlanStore(Request $request)
     {
+        Log::channel('plan_change')->debug('Início da troca de plano', [
+            'request' => $request->only(['planId', 'orderId', 'coupon']),
+            'current_date' => now()->toDateString(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'planId' => 'required',
             'orderId' => 'required',
+            'coupon' => 'nullable'
         ]);
 
         $planId = $validator->validated()['planId'];
+        $couponName = $request->input('coupon');
 
-        if (auth()->user()->hasPlan($planId)) {
+        $coupon = null;
+        $discountedValue = 0;
+
+        $plan = Plan::find($planId);
+
+        if ($couponName) {
+            $coupon = $this->getCoupon($couponName);
+
+            if (!$coupon?->is_active || !$plan) {
+                Log::channel('plan_change')->info('Tentativa de troca com cupom inválido', [
+                    'coupon' => $couponName,
+                    'plan_id' => $planId
+                ]);
+
+                toastr()->info("Cupom inválido.");
+                return back()->withInput()->withErrors(['error' => 'Ocorreu uma falha ao processar seu cadastro. Tente novamente.']);
+            }
+
+            $discountedValue = $this->getDiscount($plan, $coupon);
+            $discountedValueFormat = number_format($discountedValue, 2, ',', '.');
+
+            if ($discountedValue > 0 && $discountedValue <= 5) {
+                Log::channel('plan_change')->info('Valor final após cupom abaixo do mínimo', [
+                    'coupon' => $couponName,
+                    'plan_id' => $planId,
+                    'final_value' => $discountedValue,
+                ]);
+                toastr()->info("O valor final de R$$discountedValueFormat após o cupom ser aplicado não pode ser menor que R$5,00.");
+                return back()->withInput()->withErrors(['error' => 'Ocorreu uma falha ao processar seu cadastro. Tente novamente.']);
+            }
+        }
+
+        $order = $this->model->find($validator->validated()['orderId']);
+
+        if ($order->hasPlan($planId, $order->customer_id)) {
             toastr('Este é o seu plano atual, escolha outro plano.', 'warning');
             return redirect()->back();
         }
 
-        $plan = Plan::find($planId);
-        $order = $this->model->find($validator->validated()['orderId']);
-
-
-        // Lógica caso o plano for grátis ou zero
-        //  if ($plan->value <= 0 || $plan->original_plan_value <= 0) {
-        //     // Atualiza localmente sem criar assinatura Asaas
-        //     $order->update([
-        //         'plan_id' => $plan->id,
-        //         'value' => 0,
-        //         'description' => $plan->description,
-        //         'changed_plan' => true,
-        //         'original_plan_value' => 0,
-        //     ]);
-
-        //     toastr('Plano gratuito selecionado, assinatura Asaas não criada.', 'info');
-        //     return redirect()->route('panel.orders.index');
-        // }
-
         if (
             $order->next_due_date < now()
-            && $order->payment_status !== PaymentStatusOrderAsaasEnum::RECEIVED->getName()
+            && (
+                $order->payment_status !== PaymentStatusOrderAsaasEnum::RECEIVED->getName() &&
+                $order->payment_status !== PaymentStatusOrderAsaasEnum::CONFIRMED->getName()
+            )
         ) {
             toastr(
                 'Se já fez o pagamento, por favor, aguarde a efetivação pelo sistema.',
@@ -426,7 +455,9 @@ class OrderController extends Controller
             return redirect()->back();
         }
 
-        $cycleDays = match ($order->cycle) {
+        $rawCycle = $order->getRawOriginal('cycle');
+
+        $cycleDays = match ($rawCycle) {
             'WEEKLY' => 7,
             'BIWEEKLY' => 14,
             'MONTHLY' => 30,
@@ -436,60 +467,173 @@ class OrderController extends Controller
             'YEARLY' => 365,
             default => 30,
         };
+
+        Log::channel('plan_change')->debug('Dados do pedido e ciclo', [
+            'order_id' => $order->id,
+            'current_plan_value' => $order->value,
+            'current_cycle' => $order->cycle,
+            'cycle_days' => $cycleDays,
+            'next_due_date_local' => $order->next_due_date,
+        ]);
+
         $adapter = app(AsaasConnector::class);
         $gateway = new Gateway($adapter);
 
         $subscription = $gateway->subscription()->get($order->subscription_asaas_id);
-        $daysUsed = $cycleDays - now()->diffInDays($subscription['nextDueDate']);
+        Log::channel('plan_change')->debug('Resposta da API do Asaas - assinatura', [
+            'subscription_id' => $order->subscription_asaas_id,
+            'nextDueDate_asaas' => $subscription['nextDueDate'] ?? null,
+            'status' => $subscription['status'] ?? null,
+        ]);
+
+        $asaasPayments = $gateway->subscription()->getPayments($order->subscription_asaas_id);
+        $pendingPayments = collect($asaasPayments['data'])
+            ->whereIn('status', ['PENDING', 'OVERDUE'])
+            ->sortBy('dueDate');
+
+        if ($pendingPayments->isEmpty()) {
+            $nextDueDate = $order->next_due_date->format('Y-m-d');
+            Log::channel('plan_change')->warning('Nenhum pagamento pendente encontrado. Usando next_due_date do banco.', [
+                'order_id' => $order->id,
+                'fallback_date' => $nextDueDate,
+            ]);
+        } else {
+            $nextDueDate = $pendingPayments->first()['dueDate'];
+        }
+
+        Log::channel('plan_change')->debug('Próxima data de vencimento real (do pagamento)', [
+            'next_due_date_from_payment' => $nextDueDate,
+            'order_next_due_date' => $order->next_due_date->toDateString(),
+        ]);
+
+        $today = now()->startOfDay();
+        $dueDate = Carbon::parse($nextDueDate)->startOfDay();
+
+        $daysRemaining = max(0, $dueDate->diffInDays($today));
+
+        Log::channel('plan_change')->debug('Cálculo de dias corrigido', [
+            'today' => $today->toDateString(),
+            'due_date' => $dueDate->toDateString(),
+            'days_remaining' => $daysRemaining,
+        ]);
+
+        $daysUsed = $cycleDays - $daysRemaining;
+
+        Log::channel('plan_change')->debug('Cálculo de dias', [
+            'current_date' => now()->toDateString(),
+            'next_due_date_asaas' => $subscription['nextDueDate'],
+            'days_remaining' => $daysRemaining,
+            'days_used' => $daysUsed,
+        ]);
+
         $actualPlanValue = $order->value;
-        $newPlanValue = $plan->value;
+        $newPlanValue = is_null($coupon) ? $plan->value : $discountedValue;
         $isUpgrade = $newPlanValue > $actualPlanValue;
         $isDowngrade = $newPlanValue < $actualPlanValue;
         $invoiceValue = $newPlanValue;
 
+        Log::channel('plan_change')->debug('Valores dos planos', [
+            'actual_plan_value' => $actualPlanValue,
+            'new_plan_value' => $newPlanValue,
+            'is_upgrade' => $isUpgrade,
+            'is_downgrade' => $isDowngrade,
+            'has_coupon' => !is_null($coupon),
+            'coupon_name' => $couponName,
+        ]);
+
+        $forNextCycle = $isDowngrade;
+
+        $days = 0;
+
         if ($isUpgrade) {
+            Log::channel('plan_change')->info('Iniciando processo de upgrade');
+
             $asaasPaymentsFromActualSubscription = $gateway->subscription()->getPayments($order->subscription_asaas_id);
 
+            // Verifica se já houve pagamento recebido (não está em trial)
+            $hasReceivedPayment = collect($asaasPaymentsFromActualSubscription['data'])
+                ->contains(fn($payment) => $payment['status'] === 'RECEIVED');
+
+            // Remove pagamentos pendentes (sempre necessário para evitar cobranças antigas)
             foreach ($asaasPaymentsFromActualSubscription['data'] as $subscriptionPayment) {
                 if ($subscriptionPayment['status'] === 'PENDING') {
+                    Log::channel('plan_change')->debug('Removendo pagamento pendente', [
+                        'payment_id' => $subscriptionPayment['id'],
+                        'value' => $subscriptionPayment['value'],
+                        'status' => $subscriptionPayment['status'],
+                    ]);
+
                     $paymentDeleted = $gateway->payment()->delete($subscriptionPayment['id']);
                     logger(
                         $paymentDeleted['deleted']
-                        ? "Pagamento removido no Asaas para atualização de plano. Pedido: $order->id"
-                        : "Erro ao remover pagamento no Asaas para atualização de plano. Pedido: $order->id"
+                            ? "Pagamento removido no Asaas para atualização de plano. Pedido: $order->id"
+                            : "Erro ao remover pagamento no Asaas para atualização de plano. Pedido: $order->id"
                     );
                 }
             }
-            ;
 
-            $dailyRate = (float) $actualPlanValue / (float) $cycleDays;
-            $dailyRate = floor($dailyRate * 100) / 100;
-            $credit = $dailyRate * ($cycleDays - $daysUsed);
-            $invoiceValue = max(0, $newPlanValue - $credit);
+            if ($hasReceivedPayment) {
+                // Cliente já pagou → aplica crédito do plano antigo
+                $dailyRate = (float) $actualPlanValue / (float) $cycleDays;
+                $dailyRate = floor($dailyRate * 100) / 100;
+                $credit = $dailyRate * $daysRemaining;
+                $invoiceValue = max(0, $newPlanValue - $credit);
 
+                Log::channel('plan_change')->debug('Cliente já pagou. Aplicando crédito.', [
+                    'daily_rate' => $dailyRate,
+                    'days_remaining' => $daysRemaining,
+                    'credit' => $credit,
+                    'new_plan_value' => $newPlanValue,
+                    'invoice_value' => $invoiceValue,
+                ]);
+            } else {
+                // Está em trial → NÃO há crédito. Cobra valor integral do novo plano no próximo vencimento.
+                $invoiceValue = $newPlanValue;
 
-            /* logger('cálculos', [
-                 'credito' => $credit,
-                 'valor usado' => $dailyRate,
-                 'valor do plano atual ' => (float)$actualPlanValue,
-                 'ciclo' => (float)$cycleDays,
-                 'valor do novo plano' => $newPlanValue,
-                 'valor a ser cobrado' => $invoiceValue
-             ]);*/
+                Log::channel('plan_change')->debug('Cliente em trial. Sem crédito. Próxima cobrança será valor integral do novo plano.', [
+                    'new_plan_value' => $newPlanValue,
+                    'invoice_value' => $invoiceValue,
+                ]);
+            }
+
+            if ($invoiceValue <= 5) {
+                Log::channel('plan_change')->info('Upgrade bloqueado: valor final <= R$5,00', [
+                    'invoice_value' => $invoiceValue,
+                ]);
+
+                toastr(
+                    "Não é possível trocar o plano nesse momento pois o valor a ser cobrado (R$$invoiceValue) é menor que R$5,00.",
+                    'info'
+                );
+
+                return redirect()->route('panel.orders.index');
+            }
+
+            // Define a data de vencimento como a data original (não hoje!)
+            $dueDate = $nextDueDate;
+        } else {
+            $days = max(0, $cycleDays - $daysUsed);
+            $dueDate = $forNextCycle
+                ? $order->next_due_date->copy()->addDays($days)->format('Y-m-d')
+                : now()->format('Y-m-d');
         }
 
-        // Define se a troca deve ser aplicada no próximo ciclo
-        $forNextCycle = $isDowngrade;
-
-        //calcular o próximo vencimento
-        $days = max(0, $cycleDays - $daysUsed);
-
-        $dueDate = $forNextCycle
-            ? $order->next_due_date->copy()->addDays($days)->format('Y-m-d')
-            : now()->format('Y-m-d');
+        Log::channel('plan_change')->debug('Data de vencimento da nova fatura', [
+            'for_next_cycle' => $forNextCycle,
+            'days_to_add' => $days,
+            'original_next_due_date' => $order->next_due_date->toDateString(),
+            'new_due_date' => $dueDate,
+        ]);
 
         // Atualiza assinatura e troca os pacotes
         $result = $this->updateSubscription($order, $invoiceValue, $plan, $gateway, $dueDate);
+
+        Log::channel('plan_change')->debug('Resultado da atualização da assinatura', [
+            'success' => $result,
+            'order_id' => $order->id,
+            'invoice_value' => $invoiceValue,
+            'new_plan_id' => $plan->id,
+        ]);
 
         if ($isDowngrade && $result) {
             toastr(
@@ -506,9 +650,193 @@ class OrderController extends Controller
             toastr('Erro ao atualizar assinatura!', 'error');
         }
 
+        Log::channel('plan_change')->info('Fim do processo de troca de plano', [
+            'order_id' => $order->id,
+            'success' => $result,
+        ]);
+
         return redirect()->route('panel.orders.index');
     }
 
+    private function getCoupon(mixed $couponName): ?Coupon
+    {
+        return Coupon::where('name', $couponName)->first();
+    }
+
+    private function getDiscount(Plan $plan, Coupon $coupon): mixed
+    {
+        return $plan->value - ($plan->value * ($coupon->percent / 100));
+    }
+
+    public function changeCard(string $id_order)
+    {
+        return view('panel.orders.local.index.modals.edit-card', compact('id_order'));
+    }
+
+    public function showCards($id): View
+    {
+        $order = $this->model->find($this->request->id);
+
+        return view('panel.orders.local.index.modals.change-card', compact('order'));
+    }
+
+    public function updateCard(Order $order)
+    {
+        $data = $this->request->only([
+            "id_order",
+            "credit_card_number",
+            "credit_card_name",
+            "credit_card_expiry_month",
+            "credit_card_expiry_year",
+            "credit_card_ccv"
+        ]);
+
+        $validator = Validator::make($data, [
+            'credit_card_number' => ['required', 'string', 'max:19'],
+            'credit_card_name' => ['required', 'string', 'max:255'],
+            'credit_card_expiry_month' => ['required', 'string', 'max:2'],
+            'credit_card_expiry_year' => ['required', 'string', 'max:4'],
+            'credit_card_ccv' => ['required', 'string', 'max:4'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors(),
+            ]);
+        }
+
+        $customer = $order->customer;
+
+        $newLast4 = substr(preg_replace('/\D/', '', $data['credit_card_number']), -4);
+        $existingLast4 = $customer->credit_card_number ? substr($customer->credit_card_number, -4) : null;
+
+        if ($existingLast4 && $newLast4 === $existingLast4) {
+            return response()->json([
+                'status' => 400,
+                'errors' => [
+                    'message' => ['Este cartão já está em uso. Por favor, insira um cartão diferente.']
+                ]
+            ]);
+        }
+
+        $asaasCustomerId = $order->customer_asaas_id;
+
+        try {
+            $creditCardData = $this->extractCreditCardData($data);
+            Log::channel('registration')->info('Tentando tokenizar cartão', [
+                'asaas_customer_id' => $asaasCustomerId,
+                'card_last4' => substr($creditCardData['number'], -4),
+                'holder' => $creditCardData['holderName'],
+            ]);
+
+            $creditCardInfo = $this->tokenizeCreditCard($asaasCustomerId, $creditCardData);
+
+            Log::channel('registration')->info('Cartão tokenizado com sucesso', [
+                'asaas_customer_id' => $asaasCustomerId,
+                'token' => $creditCardInfo['token'],
+                'brand' => $creditCardInfo['brand'],
+            ]);
+        } catch (\Exception $e) {
+            Log::channel('registration')->error('Falha na tokenização do cartão.', [
+                'asaas_customer_id' => $asaasCustomerId,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
+
+        try {
+            $result = DB::transaction(function () use ($customer, $creditCardInfo, $asaasCustomerId, $order) {
+                if ($customer->credit_card_token) {
+                    $customer->creditCards()->create([
+                        'credit_card_token' => $customer->credit_card_token,
+                        'credit_card_brand' => $customer->credit_card_brand,
+                        'credit_card_number' => $customer->credit_card_number,
+                    ]);
+                }
+
+                $customer->update([
+                    'customer_id' => $asaasCustomerId,
+                    'credit_card_token' => $creditCardInfo['token'],
+                    'credit_card_brand' => $creditCardInfo['brand'],
+                    'credit_card_number' => $creditCardInfo['number'],
+                ]);
+
+                if ($order->subscription_asaas_id) {
+                    $adapter = new AsaasConnector();
+                    $gateway = new Gateway($adapter);
+
+                    $customerIp = $this->request->ip();
+                    $gateway->subscription()->updateCreditCard(
+                        $order->subscription_asaas_id,
+                        $creditCardInfo['token'],
+                        $customerIp
+                    );
+                } else {
+                    throw new \Exception('Assinatura não encontrada para atualização do cartão.');
+                }
+
+                return true;
+            });
+
+            Log::channel('registration')->info('Cartão e assinatura atualizados com sucesso');
+            return response()->json(['status' => 200, 'message' => 'Cartão atualizado com sucesso!']);
+        } catch (\Exception $e) {
+            Log::channel('registration')->error('Falha na atualização do cartão (transação revertida).', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Não foi possível atualizar o cartão. Tente novamente.',
+            ], 500);
+        }
+    }
+
+    private function extractCreditCardData(array $data): array
+    {
+        return [
+            'holderName' => $data['credit_card_name'],
+            'number' => $data['credit_card_number'],
+            'expiryMonth' => $data['credit_card_expiry_month'],
+            'expiryYear' => $data['credit_card_expiry_year'],
+            'ccv' => $data['credit_card_ccv'],
+            'ip' => $data['ip'] ?? request()->ip(),
+        ];
+    }
+
+    private function tokenizeCreditCard(string $asaasCustomerId, array $cardData): array
+    {
+        $adapter = new AsaasConnector();
+        $gateway = new Gateway($adapter);
+
+        $payload = [
+            'customer' => $asaasCustomerId,
+            'creditCard' => [
+                'holderName' => $cardData['holderName'],
+                'number' => $cardData['number'],
+                'expiryMonth' => $cardData['expiryMonth'],
+                'expiryYear' => $cardData['expiryYear'],
+                'ccv' => $cardData['ccv'],
+            ],
+            'remoteIp' => $cardData['ip'],
+        ];
+
+        $response = $gateway->creditCard()->tokenize($payload);
+
+        if (!isset($response['creditCardToken']) || isset($response['error'])) {
+            $error = $response['error']['errors'][0]['description'] ?? 'Erro ao tokenizar cartão';
+            Log::channel('registration')->info("Asaas - falha na tokenização: {$error}");
+            throw new \Exception($error);
+        }
+
+        return [
+            'token' => $response['creditCardToken'],
+            'brand' => $response['creditCardBrand'],
+            'number' => $response['creditCardNumber'],
+        ];
+    }
     protected function updateSubscription(
         $order,
         $invoiceValue,
@@ -550,15 +878,21 @@ class OrderController extends Controller
                 'plan_id' => $plan->id,
                 'description' => $plan->description,
                 'changed_plan' => true,
+                'value' => $invoiceValue,
                 'original_plan_value' => $plan->value
             ]);
             return true;
         }
 
-        Log::error('Erro no retorno do Asaas ao atualizar assinatura.', [
-            'response' => $response,
-            'order_id' => $order->id,
-        ]);
+        if (isset($response['error'])) {
+            $error = $response['error']['errors'][0]['description'] ?? 'Erro ao criar cliente no Asaas';
+            Log::error("Asaas - Erro no retorno do Asaas ao atualizar assinatura.", [
+                'response' => $error,
+                'order_id' => $order->id,
+            ]);
+
+            toastr()->info($error);
+        }
 
         return false;
     }

@@ -25,19 +25,24 @@
 
         $(".btn-submit").attr('disabled', true).text('Enviando...');
 
+        const formData = getFormData();
+
         $.ajax({
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            type: 'POST',
-            url: '{{ route("panel.coupons.store") }}',
-            data: $(this).serialize()
-        })
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                type: 'POST',
+                url: '{{ route('panel.coupons.store') }}',
+                data: formData,
+                processData: false,
+                contentType: false,
+            })
             .done(function(data) {
                 if (data.status === 400) {
                     Object.keys(data.errors).forEach((item) => {
                         $("#" + item).addClass('is-invalid');
-                        toastMessage('fa fa-exclamation', 'bg-danger', 'Ops, houve um erro!', data.errors[item]);
+                        toastMessage('fa fa-exclamation', 'bg-danger', 'Ops, houve um erro!', data
+                            .errors[item]);
                     });
                     $(".btn-submit").removeAttr('disabled').text('Criar');
                 } else if (data.status === 200) {

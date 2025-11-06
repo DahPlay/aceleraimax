@@ -46,4 +46,12 @@ class Subscription implements SubscriptionInterface
     {
         return $this->http->delete('/subscriptions/' . $id);
     }
+
+    public function updateCreditCard(int|string $subscriptionId, string $creditCardToken, string $customerIp): array
+    {
+        return $this->http->put("/subscriptions/{$subscriptionId}/creditCard", [
+            'creditCardToken' => $creditCardToken,
+            'remoteIp'        => $customerIp,
+        ]);
+    }
 }
