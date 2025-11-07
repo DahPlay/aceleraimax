@@ -33,7 +33,6 @@ class UserController extends Controller
 
     public function index(): View
     {
-        dd(config('app.env'), app()->environment());
         return view($this->request->route()->getName());
     }
 
