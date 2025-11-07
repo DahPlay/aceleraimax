@@ -24,23 +24,23 @@ class CustomerObserver
 {
     public function created(Customer $customer): void
     {
-        if (app()->runningInConsole() || request()->is('register')) {
-            return;
-        }
+        // if (app()->runningInConsole() || request()->is('register')) {
+        //     return;
+        // }
 
-        $this->createUser($customer);
+        // $this->createUser($customer);
 
-        if ($customer->document) {
-            $this->createCustomerInAsaas($customer);
-            $this->generateCreditCardToken($customer);
-            $this->createCustomerInYouCast($customer);
+        // if ($customer->document) {
+        //     $this->createCustomerInAsaas($customer);
+        //     $this->generateCreditCardToken($customer);
+        //     $this->createCustomerInYouCast($customer);
 
-            $plan_id = (int) request()->input('plan_id');
+        //     $plan_id = (int) request()->input('plan_id');
 
-            $order = $this->createOrder($customer, $plan_id);
+        //     $order = $this->createOrder($customer, $plan_id);
 
-            $this->createSubscriptionInAsaas($customer, $plan_id, $order);
-        }
+        //     $this->createSubscriptionInAsaas($customer, $plan_id, $order);
+        // }
     }
 
     public function deleted(Customer $customer) {}
@@ -328,32 +328,32 @@ class CustomerObserver
 
     public function updated(Customer $customer): void
     {
-        if (app()->runningInConsole() || request()->is('register')) {
-            return;
-        }
+        // if (app()->runningInConsole() || request()->is('register')) {
+        //     return;
+        // }
 
-        $customerSearch = (new CustomerSearch)->handle($customer->login);
+        // $customerSearch = (new CustomerSearch)->handle($customer->login);
 
-        Log::info("customerSearch: ");
-        Log::info($customerSearch);
+        // Log::info("customerSearch: ");
+        // Log::info($customerSearch);
 
-        Log::info("status: " . $customerSearch["status"]);
+        // Log::info("status: " . $customerSearch["status"]);
 
-        if ($customerSearch["status"] === 1) {
-            (new CustomerUpdate)->handle($customer);
+        // if ($customerSearch["status"] === 1) {
+        //     (new CustomerUpdate)->handle($customer);
 
-            // if (!is_null($customer->orders)) {
-            //     $this->createCustomerInAsaas($customer);
-            //     $this->createCustomerInYouCast($customer);
+        //     // if (!is_null($customer->orders)) {
+        //     //     $this->createCustomerInAsaas($customer);
+        //     //     $this->createCustomerInYouCast($customer);
 
-            //     $plan_id = (int) request()->input('plan_id');
+        //     //     $plan_id = (int) request()->input('plan_id');
 
-            //     $order = $this->createOrder($customer, $plan_id);
+        //     //     $order = $this->createOrder($customer, $plan_id);
 
-            //     $this->createSubscriptionInAsaas($customer, $plan_id, $order);
-            // }
-        }
+        //     //     $this->createSubscriptionInAsaas($customer, $plan_id, $order);
+        //     // }
+        // }
 
-        Log::info('CustomerObserver - line 233 - Customer atualizado na YouCast', $customerSearch);
+        // Log::info('CustomerObserver - line 233 - Customer atualizado na YouCast', $customerSearch);
     }
 }

@@ -3,12 +3,20 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Models\Access;
+use App\Models\Customer;
 use App\Models\User;
+use App\Services\Alloyal\User\UserCreate;
+use App\Services\Alloyal\User\UserDisable;
+use App\Services\Alloyal\User\UserUpdate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -25,6 +33,7 @@ class UserController extends Controller
 
     public function index(): View
     {
+        dd(config('app.env'), app()->environment());
         return view($this->request->route()->getName());
     }
 
@@ -76,50 +85,76 @@ class UserController extends Controller
         return view('panel.users.local.index.modals.create', compact('user', 'accesses'));
     }
 
-    public function store(): JsonResponse
+    public function store(UserStoreRequest $request): JsonResponse
     {
-        $data = $this->request->only([
-            'photo',
-            'name',
-            'login',
-            'email',
-            'password',
-            'password_confirmation',
-            'access_id',
-        ]);
+        $data = $request->validated();
 
-        $validator = Validator::make($data, [
-            'photo' => 'image|mimes:jpeg,jpg,png|max:500',
-            'name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'string', 'email', 'max:200', 'unique:users'],
-            'password' => ['required', 'string', 'min:4', 'confirmed'],
-            'access_id' => ['required', 'integer']
-        ]);
+        $photoPath = null;
 
-        if ($validator->fails()) {
+        try {
+            $user = DB::transaction(function () use ($request, $data, &$photoPath) {
+                if ($request->hasFile('photo')) {
+                    $photoPath = $request->file('photo')->store('avatars', 'public');
+                    $data['photo'] = $photoPath;
+                }
+
+                $user = $this->model->create($data);
+
+                $customerData = $this->prepareCustomerData($data);
+
+                $user->customer()->create($customerData);
+
+                return $user;
+            });
+
+            $alloyalPayload = [
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'cpf' => $data['document'],
+                'cellphone' => $data['mobile'],
+                'password' => $request->input('password'),
+            ];
+
+            $alloyalResponse = (new UserCreate())->handle($alloyalPayload);
+
+            if (isset($alloyalResponse['errors'])) {
+                DB::transaction(function () use ($user, $photoPath) {
+                    if ($user->customer) {
+                        $user->customer->delete();
+                    }
+                    $user->delete();
+                });
+
+                if ($photoPath && Storage::disk('public')->exists($photoPath)) {
+                    Storage::disk('public')->delete($photoPath);
+                }
+
+                return response()->json([
+                    'status' => 400,
+                    'errors' => [
+                        'message' => [$alloyalResponse['errors'] ?? 'Falha ao criar usuário na Alloyal'],
+                    ],
+                ]);
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Usuário criado com sucesso!',
+                'user_id' => $user->id,
+            ]);
+        } catch (\Exception $e) {
+            if ($photoPath && Storage::disk('public')->exists($photoPath)) {
+                Storage::disk('public')->delete($photoPath);
+            }
+
+            Log::error('Falha na criação de usuário', [
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return response()->json([
                 'status' => 400,
-                'errors' => $validator->errors(),
-            ]);
-        }
-
-        if ($this->request->hasFile('photo')) {
-            $data["photo"] = $this->request->file('photo')->store('avatars', 'public');
-        }
-
-        $user = $this->model->create($data);
-
-        if ($user) {
-            return response()->json([
-                'status' => '200',
-                'message' => 'Ação executada com sucesso!'
-            ]);
-        } else {
-            return response()->json([
-                'status' => '400',
-                'errors' => [
-                    'message' => ['Erro executar a ação, tente novamente!']
-                ]
+                'errors' => ['message' => ['Erro interno. Tente novamente.']],
             ]);
         }
     }
@@ -133,99 +168,108 @@ class UserController extends Controller
         return view('panel.users.local.index.modals.edit', compact("user", "accesses"));
     }
 
-    public function update($id): JsonResponse
+    public function update(UserUpdateRequest $request, $id): JsonResponse
     {
-        $user = $this->model->find($id);
+        $user = $this->model->with('customer')->findOrFail($id);
 
-        if ($user) {
-            $data = $this->request->only([
-                'photo',
-                'name',
-                'login',
-                'email',
-                'password',
-                'password_confirmation',
-            ]);
+        $originalUser = $user->replicate();
+        $originalCustomer = $user->customer ? $user->customer->replicate() : null;
 
-            $validator = Validator::make($data, [
-                'photo' => 'image|mimes:jpeg,jpg,png|max:500',
-                'name' => ['required', 'string', 'max:100'],
-                'email' => ['required', 'string', 'email', 'max:200'],
-            ]);
+        $newPhotoPath = null;
+        $oldPhotoPath = $user->photo;
 
-            if ($user->email != $this->request->email) {
-                $hasEmail = $this->model->where('email', $this->request->email)->get();
+        try {
+            if ($request->hasFile('photo')) {
+                $newPhotoPath = $request->file('photo')->store('avatars', 'public');
+                $data['photo'] = $newPhotoPath;
 
-                if (count($hasEmail) == 0) {
-                    $user->email = $this->request->email;
-                } else {
-                    $validator->errors()->add('email', __('validation.unique', [
-                        'attribute' => 'email',
-                    ]));
+                if ($oldPhotoPath && $oldPhotoPath !== 'avatars/default.png') {
+                    Storage::disk('public')->delete($oldPhotoPath);
                 }
             }
 
-            if (!empty($this->request->password)) {
-                if (strlen($this->request->password) >= 4) {
-                    if ($this->request->password === $this->request->password_confirmation) {
-                        $data['password'] = Hash::make($this->request->password);
-                    } else {
-                        $validator->errors()->add('password', __('validation.confirmed', [
-                            'attribute' => 'password',
-                        ]));
-                    }
-                } else {
-                    $validator->errors()->add('password', __('validation.min.string', [
-                        'attribute' => 'password',
-                        'min' => 4
-                    ]));
-                }
+            $data = $request->validated();
+
+            if ($request->filled('password')) {
+                $data['password'] = Hash::make($request->input('password'));
             } else {
-                $data['password'] = $user->password;
-            }
-
-            if (count($validator->errors()) > 0) {
-                return response()->json([
-                    'status' => 400,
-                    'errors' => $validator->errors(),
-                ]);
-            }
-
-            if ($this->request->hasFile('photo')) {
-                if ($user->photo) {
-                    $file_path_photo = public_path('storage/' . $user->photo);
-
-                    if (file_exists($file_path_photo) && $user->photo != "avatars/default.png") {
-                        unlink($file_path_photo);
-                    }
-                }
-
-                $data["photo"] = $this->request->file('photo')->store('avatars', 'public');
+                unset($data['password'], $data['password_confirmation']);
             }
 
             $user->update($data);
 
-            if ($user) {
-                return response()->json([
-                    'status' => '200',
-                    'message' => 'Ação executada com sucesso!'
-                ]);
-            } else {
-                return response()->json([
-                    'status' => '400',
-                    'errors' => [
-                        'message' => ['Erro executar a ação, tente novamente!']
-                    ]
+            if ($user->customer) {
+                $user->customer->update([
+                    'document' => $data['document'],
+                    'mobile' => $data['mobile'],
                 ]);
             }
-        } else {
+
+            $alloyalPayload = [
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'cpf' => $data['document'],
+                'cellphone' => $data['mobile'],
+            ];
+
+            if ($request->filled('password')) {
+                $alloyalPayload['password'] = $request->input('password');
+            }
+
+            $alloyalResponse = (new UserUpdate())->handle($alloyalPayload);
+
+            if (isset($alloyalResponse['errors'])) {
+                $this->rollbackUserUpdate($user, $originalUser, $originalCustomer, $newPhotoPath, $oldPhotoPath);
+
+                return response()->json([
+                    'status' => 400,
+                    'errors' => [
+                        'message' => [$alloyalResponse['errors'] ?? 'Falha ao atualizar na Alloyal'],
+                    ],
+                ]);
+            }
+
             return response()->json([
-                'status' => '400',
-                'errors' => [
-                    'message' => ['Os dados não foram encontrados!']
-                ]
+                'status' => 200,
+                'message' => 'Usuário atualizado com sucesso!',
+            ]);
+        } catch (\Exception $e) {
+            $this->rollbackUserUpdate($user, $originalUser, $originalCustomer, $newPhotoPath, $oldPhotoPath);
+
+            Log::error('Exceção em update de usuário', [
+                'user_id' => $user->id,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => 400,
+                'errors' => ['message' => ['Erro interno. Tente novamente.']],
             ]);
         }
+    }
+
+    private function rollbackUserUpdate($user, $originalUser, $originalCustomer, $newPhotoPath, $oldPhotoPath): void
+    {
+        DB::transaction(function () use ($user, $originalUser, $originalCustomer, $newPhotoPath, $oldPhotoPath) {
+            $user->fill([
+                'name' => $originalUser->name,
+                'email' => $originalUser->email,
+                'login' => $originalUser->login,
+                'photo' => $originalUser->photo,
+                'password' => $originalUser->password,
+            ])->save();
+
+            if ($originalCustomer) {
+                $user->customer->fill([
+                    'document' => $originalCustomer->document,
+                    'mobile' => $originalCustomer->mobile,
+                ])->save();
+            }
+
+            if ($newPhotoPath) {
+                Storage::disk('public')->delete($newPhotoPath);
+            }
+        });
     }
 
     public function delete($id): View
@@ -237,38 +281,70 @@ class UserController extends Controller
 
     public function destroy(): JsonResponse
     {
-        $user = $this->model->find($this->request->id);
+        $user = $this->model->with('customer')->findOrFail($this->request->id);
 
-        if ($user) {
-            if ($user->photo && $user->photo !== 'avatars/default.png') {
-                $file_path_photo = storage_path('app/public/' . $user->photo);
+        $photoPath = $user->photo;
+        $originalUserData = $user->replicate();
+        $originalCustomerData = $user->customer ? $user->customer->replicate() : null;
 
-                if (file_exists($file_path_photo)) {
-                    unlink($file_path_photo);
-                }
-            }
+        try {
+            $alloyalPayload = [
+                'cpf' => $user->customer?->document ?? $user->document ?? '',
+            ];
 
-            $delete = $user->delete();
+            $alloyalResponse = (new UserDisable())->handle($alloyalPayload);
 
-            if ($delete) {
+            if (isset($alloyalResponse['errors'])) {
                 return response()->json([
-                    'status' => '200',
-                    'message' => 'Ação executada com sucesso!'
-                ]);
-            } else {
-                return response()->json([
-                    'status' => '400',
+                    'status' => 400,
                     'errors' => [
-                        'message' => ['Erro executar a ação, tente novamente!']
+                        'message' => [$alloyalResponse['errors'] ?? 'Falha ao inativar usuário na Alloyal'],
                     ],
                 ]);
             }
-        } else {
+
+            DB::transaction(function () use ($user, $photoPath) {
+                if ($photoPath && $photoPath !== 'avatars/default.png') {
+                    Storage::disk('public')->delete($photoPath);
+                }
+
+                $user->delete();
+            });
+
             return response()->json([
-                'status' => '400',
-                'errors' => [
-                    'message' => ['Os dados não foram encontrados!']
-                ],
+                'status' => 200,
+                'message' => 'Usuário excluído com sucesso!',
+            ]);
+        } catch (\Exception $e) {
+            $this->rollbackUserDeletion($originalUserData, $originalCustomerData, $photoPath);
+
+            Log::error('Falha na exclusão de usuário', [
+                'user_id' => $user->id,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => 400,
+                'errors' => ['message' => ['Erro interno. Tente novamente.']],
+            ]);
+        }
+    }
+
+    private function rollbackUserDeletion($originalUser, $originalCustomer, $photoPath): void
+    {
+        try {
+            DB::transaction(function () use ($originalUser, $originalCustomer, $photoPath) {
+                $restoredUser = User::create($originalUser->toArray());
+
+                if ($originalCustomer) {
+                    $restoredCustomer = Customer::create($originalCustomer->toArray());
+                    $restoredUser->customer()->create($restoredCustomer);
+                }
+            });
+        } catch (\Exception $rollbackException) {
+            Log::critical('Falha ao reverter exclusão de usuário', [
+                'original_user_id' => $originalUser->id ?? 'unknown',
+                'rollback_error' => $rollbackException->getMessage(),
             ]);
         }
     }
@@ -357,5 +433,21 @@ class UserController extends Controller
                 ],
             ]);
         }
+    }
+
+    private function prepareCustomerData(array $data): array
+    {
+        return [
+            'login' => $data['login'],
+            'name' => $data['name'],
+            'document' => $data['document'],
+            'mobile' => $data['mobile'],
+            'email' => $data['email'],
+            'payment_asaas_id' => $data['payment_asaas_id'] ?? null,
+            'cpf_dependente_1' => $data['cpf_dependente_1'] ?? null,
+            'cpf_dependente_2' => $data['cpf_dependente_2'] ?? null,
+            'cpf_dependente_3' => $data['cpf_dependente_3'] ?? null,
+            'coupon_id' => $data['coupon_id'] ?? null,
+        ];
     }
 }

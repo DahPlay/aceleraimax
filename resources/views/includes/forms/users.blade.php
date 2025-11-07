@@ -83,6 +83,24 @@
             </div>
         </div>
     </div>
+
+    <div class="row">
+        <div class="form-group col-4">
+            <label for="document" class="col-form-label text-danger">CPF: *</label>
+            <div class="input-group">
+                <input type="text" id="document" class="form-control" name="document" placeholder="Usuário *"
+                    value="{{ $user->customer->document ?? old('document') }}" required>
+            </div>
+        </div>
+
+        <div class="form-group col-4">
+            <label for="mobile" class="col-form-label text-danger">Celular: *</label>
+            <div class="input-group">
+                <input type="text" id="mobile" class="form-control" name="mobile" placeholder="Usuário *"
+                    value="{{ $user->customer->mobile ?? old('mobile') }}" required>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -96,6 +114,8 @@
         formData.append('email', $("#email").val());
         formData.append('password', $("#password").val());
         formData.append('password_confirmation', $("#password_confirmation").val());
+        formData.append('document', $("#document").val());
+        formData.append('mobile', $("#mobile").val());
 
         if ($('#photo').length) {
             if (document.getElementById('photo').files.length) {
@@ -109,6 +129,7 @@
 
     $(function() {
         initSelects2();
+        initMasks();
     });
 
     function initSelects2() {
@@ -117,5 +138,10 @@
             placeholder: "Perfis",
             allowClear: true,
         });
+    }
+
+    function initMasks() {
+        $('#document').mask('000.000.000-00');
+        $('#mobile').mask('(00) 00000-0000');
     }
 </script>

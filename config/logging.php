@@ -148,6 +148,13 @@ return [
             'level' => 'debug',
             'days' => 7,
         ],
+
+        'alloyal' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/alloyal/alloyal.log'),
+            'level' => 'debug',
+            'days' => 7,
+        ],
     ],
 
 ];
