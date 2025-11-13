@@ -18,5 +18,21 @@
         @endcan
 
         <div class="dropdown-divider"></div>
+
+        @if (!is_null($alloyalUser))
+            @if (!is_null($user->customer->web_smart_link))
+                <a href='{{ $user->customer->web_smart_link }}' target="_blank" class='btn btn-info dropdown-item'>
+                    <i class='fa fa-bell'></i>
+                    <span class="ml-2">Acessar Alloyal</span>
+                </a>
+            @else
+                <a href='javascript:;' class='btn-add-smart-link btn btn-info dropdown-item'
+                    data-id='{{ $user->id }}' data-url='/{{ $routeCrud }}/createSmartLink'>
+                    <i class='fa fa-bell-slash'></i>
+                    <span class="ml-2">Gerar Smart Link</span>
+                </a>
+            @endif
+
+        @endif
     </div>
 </div>

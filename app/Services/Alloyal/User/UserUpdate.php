@@ -15,13 +15,13 @@ class UserUpdate
         $cpf = $data['cpf'] ?? '';
         $cpf = $this->cleanCPF($cpf);
 
-        $cleanPhone = $this->cleanPhone($data['cellphone'] ?? '');
+        $phone = $data['cellphone'] ?? '';
 
         Log::channel('alloyal')->debug('Início da atualização de usuário no Alloyal', [
             'name' => $data['name'] ?? 'N/A',
             'email' => $data['email'] ?? 'N/A',
             'cpf' => $cpf,
-            'cellphone_clean' => $cleanPhone,
+            'cellphone_clean' => $phone,
             'timestamp' => now()->toDateTimeString(),
         ]);
 
@@ -29,7 +29,7 @@ class UserUpdate
             'name' => $data['name'] ?? '',
             'email' => $data['email'] ?? '',
             'cpf' => $cpf,
-            'cellphone' => $cleanPhone,
+            'cellphone' => $phone,
         ];
 
         if (isset($data['password'])) {
@@ -94,10 +94,5 @@ class UserUpdate
     private function cleanCPF(string $document): string
     {
         return preg_replace('/[^0-9]/', '', $document);
-    }
-
-    private function cleanPhone(string $phone): string
-    {
-        return preg_replace('/[^0-9]/', '', $phone);
     }
 }

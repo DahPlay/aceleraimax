@@ -21,6 +21,10 @@
                 executeAll(this, e, 'modal-lg');
             });
 
+            $(document).on('click', ".btn-add-smart-link", function(e) {
+                openModal(this, e, 'modal-md');
+            });
+
             $(document).on('click', ".btn-remove", removeImage);
         });
 

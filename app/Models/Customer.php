@@ -31,6 +31,7 @@ class Customer extends Model
         'credit_card_number',
         'credit_card_brand',
         'credit_card_token',
+        'web_smart_link',
     ];
 
     protected function document(): Attribute

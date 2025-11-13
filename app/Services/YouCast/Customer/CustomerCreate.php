@@ -19,7 +19,7 @@ class CustomerCreate
                 'login' => $customer->login,
                 'password' => request()->password,
                 'profileName' => $customer->name,
-                'email' => $customer->user_email,
+                'email' => $customer->email,
                 "firstname" => $nameParts[0],
                 "lastname" => count($nameParts) > 1
                     ? implode(' ', array_slice($nameParts, 1))

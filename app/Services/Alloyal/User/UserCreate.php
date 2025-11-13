@@ -16,7 +16,6 @@ class UserCreate
         $cpf = $this->cleanDocument($cpf);
 
         $phone = $data['cellphone'] ?? '';
-        $phone = $this->cleanPhone($phone);
 
         Log::channel('alloyal')->debug('Início da criação de usuário no Alloyal', [
             'name' => $data['name'] ?? 'N/A',
@@ -30,7 +29,7 @@ class UserCreate
             'name' => $data['name'] ?? '',
             'email' => $data['email'] ?? '',
             'cpf' => $cpf,
-            'cellphone' => $phone,
+            'phone' => $phone,
         ];
 
         if (isset($data['password'])) {
@@ -95,10 +94,5 @@ class UserCreate
     private function cleanDocument(string $document): string
     {
         return preg_replace('/[^0-9]/', '', $document);
-    }
-
-    private function cleanPhone(string $phone): string
-    {
-        return preg_replace('/[^0-9]/', '', $phone);
     }
 }

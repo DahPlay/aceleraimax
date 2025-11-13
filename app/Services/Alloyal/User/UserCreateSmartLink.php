@@ -6,16 +6,16 @@ use App\Services\Alloyal\Concerns\AlloyalClient;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class UserDisable
+class UserCreateSmartLink
 {
     use AlloyalClient;
 
-    public function handle($cpf): array
+    public function handle(string $cpf): array
     {
-        $cpf = $this->cleanCPF($cpf);
+        $cpf = $this->cleanDocument($cpf);
 
-        Log::channel('alloyal')->debug('Início da inativação de usuário no Alloyal', [
-            'cpf' => $cpf,
+        Log::channel('alloyal')->debug('Início da criação do SmartLink no Alloyal', [
+            'cpf_clean' => $cpf,
             'timestamp' => now()->toDateTimeString(),
         ]);
 
@@ -27,8 +27,8 @@ class UserDisable
                 'Content-Type' => 'application/json',
                 'X-ClientEmployee-Email' => $this->email,
                 'X-ClientEmployee-Token' => $this->token,
-            ])->timeout(30)->delete(
-                "{$this->base_url}/client/v2/businesses/{$this->business_id}/authorized_users/{$cpf}"
+            ])->timeout(30)->post(
+                "{$this->base_url}/client/v2/users/{$cpf}/smart_link"
             );
 
             $durationMs = (microtime(true) - $startTime) * 1000;
@@ -36,21 +36,21 @@ class UserDisable
             $responseData = $response->json() ?? [];
 
             if ($response->successful()) {
-                Log::channel('alloyal')->info('Usuário inativado com sucesso no Alloyal', [
-                    'cpf' => $cpf,
+                Log::channel('alloyal')->info('SmartLink criado com sucesso no Alloyal', [
+                    'alloyal_user_id' => $responseData['id'] ?? null,
+                    'cpf_clean' => $cpf,
                     'status_code' => $response->status(),
                     'response_time_ms' => round($durationMs, 2),
-                    'alloyal_user_id' => $responseData['id'] ?? null,
                 ]);
 
                 return $responseData;
             } else {
                 $errorJson = $response->json() ?? [];
 
-                Log::channel('alloyal')->warning('Falha na inativação no Alloyal', [
-                    'cpf' => $cpf,
+                Log::channel('alloyal')->error('Falha na criação do SmartLink no Alloyal', [
+                    'cpf_clean' => $cpf,
                     'status_code' => $response->status(),
-                    'error_summary' => $errorJson['error'] ?? 'Sem corpo na resposta',
+                    'error_summary' => $errorJson['message'] ?? $errorJson['error'] ?? 'Sem corpo na resposta',
                     'response_time_ms' => round($durationMs, 2),
                 ]);
 
@@ -60,8 +60,8 @@ class UserDisable
                 ];
             }
         } catch (\Exception $e) {
-            Log::channel('alloyal')->error('Exceção ao inativar usuário no Alloyal', [
-                'cpf' => $cpf,
+            Log::channel('alloyal')->critical('Exceção ao criar o do SmartLink no Alloyal', [
+                'cpf_clean' => $cpf,
                 'exception_class' => get_class($e),
                 'exception_message' => $e->getMessage(),
             ]);
@@ -73,7 +73,7 @@ class UserDisable
         }
     }
 
-    private function cleanCPF(string $document): string
+    private function cleanDocument(string $document): string
     {
         return preg_replace('/[^0-9]/', '', $document);
     }

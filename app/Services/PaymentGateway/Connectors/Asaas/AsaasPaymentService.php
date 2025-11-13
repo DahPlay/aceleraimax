@@ -8,6 +8,7 @@ use App\Jobs\updateSubscriptionAfterProportionalPayJob;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Package;
+use App\Services\Alloyal\User\UserDisable;
 use App\Services\AppIntegration\PlanCancelService;
 use App\Services\AppIntegration\PlanCreateService;
 use App\Services\YouCast\Plan\PlanHistory;
@@ -115,6 +116,10 @@ class AsaasPaymentService
                     ['status' => 'INACTIVE'],
                     ['payment_status' => $paymentStatus]
                 );
+
+                $cpf = $order->customer?->document ?? '';
+
+                $alloyalResponse = (new UserDisable())->handle($cpf);
 
                 Log::warning("Pagamento atrasado para a ordem {$order->id}.");
 

@@ -166,6 +166,9 @@ Route::middleware('auth')->name('panel.')->group(function () {
         Route::post('/users/removeImage', [UserController::class, 'removeImage'])
             ->name('removeImage')->middleware('can:admin');
 
+        Route::post('/users/store-smart-link/{id}', [UserController::class, 'storeSmartLink'])
+            ->name('storeSmartLink');
+
         // Modais
         Route::get('/users/create', [UserController::class, 'create'])
             ->name('create')->middleware('can:admin');
@@ -178,6 +181,9 @@ Route::middleware('auth')->name('panel.')->group(function () {
 
         Route::post('/users/deleteAll', [UserController::class, 'deleteAll'])
             ->name('deleteAll')->middleware('can:admin');
+
+        Route::get('/users/createSmartLink/{id}', [UserController::class, 'createSmartLink'])
+            ->name('createSmartLink');
     });
 
     Route::name('customers.')->group(function () {

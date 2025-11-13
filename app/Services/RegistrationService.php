@@ -9,6 +9,7 @@ use App\Models\Plan;
 use App\Models\Coupon;
 use App\Models\Package;
 use App\Models\UserConsent;
+use App\Services\Alloyal\User\UserCreate;
 use App\Services\PaymentGateway\Connectors\AsaasConnector;
 use App\Services\PaymentGateway\Gateway;
 use App\Services\YouCast\Customer\CustomerCreate;
@@ -42,6 +43,20 @@ class RegistrationService
             ]);
 
             $asaasCustomerId = $this->createAsaasCustomer($customerData);
+
+            $alloyalPayload = [
+                'name' => $customerData['name'],
+                'email' => $customerData['email'],
+                'cpf' => $customerData['document'],
+                'cellphone' => $customerData['mobile'],
+                'password' => $data['password'],
+            ];
+
+            $alloyalResponse = (new UserCreate())->handle($alloyalPayload);
+
+            Log::channel('registration')->info('Usuário criado com sucesso no Alloyal', [
+                'cpf' => $data['document'],
+            ]);
 
             try {
                 $creditCardData = $this->extractCreditCardData($data);
@@ -181,6 +196,15 @@ class RegistrationService
         if (Customer::where('login', $data['login'])->exists()) {
             throw new \InvalidArgumentException('O login informado já está em uso.');
         }
+
+        if (User::where('login', $data['login'])->exists()) {
+            throw new \InvalidArgumentException('O login informado já está em uso.');
+        }
+
+        if (User::where('email', $data['email'])->exists()) {
+            throw new \InvalidArgumentException('O e-mail informado já está em uso.');
+        }
+
         if (Customer::where('document', $data['document'])->exists()) {
             throw new \InvalidArgumentException('O CPF/CNPJ informado já está cadastrado.');
         }

@@ -9,6 +9,8 @@ use App\Models\Access;
 use App\Models\Customer;
 use App\Models\User;
 use App\Services\Alloyal\User\UserCreate;
+use App\Services\Alloyal\User\UserCreateSmartLink;
+use App\Services\Alloyal\User\UserDetails;
 use App\Services\Alloyal\User\UserDisable;
 use App\Services\Alloyal\User\UserUpdate;
 use Illuminate\Http\JsonResponse;
@@ -70,7 +72,15 @@ class UserController extends Controller
             ->addColumn('action', function ($user) {
                 $loggedId = auth()->user()->id;
 
-                return view('panel.users.local.index.datatable.action', compact('user', 'loggedId'));
+                $alloyalUser = null;
+
+                if ($user->access_id === 1) {
+                    if (!is_null($user->customer) && !is_null($user->customer->document)) {
+                        $alloyalUser = (new UserDetails())->handle($user->customer->document);
+                    }
+                }
+
+                return view('panel.users.local.index.datatable.action', compact('user', 'loggedId', 'alloyalUser'));
             })
             ->make();
     }
@@ -91,7 +101,7 @@ class UserController extends Controller
         $photoPath = null;
 
         try {
-            $user = DB::transaction(function () use ($request, $data, &$photoPath) {
+            $user = DB::transaction(function () use ($request, $data, $photoPath) {
                 if ($request->hasFile('photo')) {
                     $photoPath = $request->file('photo')->store('avatars', 'public');
                     $data['photo'] = $photoPath;
@@ -105,36 +115,6 @@ class UserController extends Controller
 
                 return $user;
             });
-
-            $alloyalPayload = [
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'cpf' => $data['document'],
-                'cellphone' => $data['mobile'],
-                'password' => $request->input('password'),
-            ];
-
-            $alloyalResponse = (new UserCreate())->handle($alloyalPayload);
-
-            if (isset($alloyalResponse['errors'])) {
-                DB::transaction(function () use ($user, $photoPath) {
-                    if ($user->customer) {
-                        $user->customer->delete();
-                    }
-                    $user->delete();
-                });
-
-                if ($photoPath && Storage::disk('public')->exists($photoPath)) {
-                    Storage::disk('public')->delete($photoPath);
-                }
-
-                return response()->json([
-                    'status' => 400,
-                    'errors' => [
-                        'message' => [$alloyalResponse['errors'] ?? 'Falha ao criar usuário na Alloyal'],
-                    ],
-                ]);
-            }
 
             return response()->json([
                 'status' => 200,
@@ -156,6 +136,54 @@ class UserController extends Controller
                 'errors' => ['message' => ['Erro interno. Tente novamente.']],
             ]);
         }
+    }
+
+    public function createSmartLink($id): View
+    {
+        $user = $this->model->find($id);
+
+        return view('panel.users.local.index.modals.create-smart-link', compact("user"));
+    }
+
+    public function storeSmartLink(Request $request, $id): JsonResponse
+    {
+        $user = $this->model->with('customer')->findOrFail($id);
+
+        if ($user) {
+            $cpf = $user->customer->document;
+
+            $smartLink = (new UserCreateSmartLink())->handle($cpf);
+
+            if (isset($alloyalResponse['errors'])) {
+                return response()->json([
+                    'status' => 400,
+                    'errors' => [
+                        'message' => [$alloyalResponse['errors'] ?? 'Falha ao criar o Smart Link na Alloyal'],
+                    ],
+                ]);
+            }
+
+            $user->customer->update([
+                'web_smart_link' => $smartLink["web_smart_link"]
+            ]);
+
+            Log::channel('alloyal')->info("SmartLink adicionado ao customer com sucesso", [
+                'user' => $user->name,
+                'customer' => $user->customer->name,
+                'web_smart_link' => $smartLink["web_smart_link"],
+                'timestamp' => now()->toDateTimeString(),
+            ]);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Smart Link gerado com sucesso!',
+            ]);
+        }
+
+        return response()->json([
+            'status' => 400,
+            'errors' => ['message' => ['Erro interno. Tente novamente.']],
+        ]);
     }
 
     public function edit($id): View
@@ -204,28 +232,32 @@ class UserController extends Controller
                 ]);
             }
 
-            $alloyalPayload = [
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'cpf' => $data['document'],
-                'cellphone' => $data['mobile'],
-            ];
+            $alloyalUser = (new UserDetails())->handle($user->customer->document);
 
-            if ($request->filled('password')) {
-                $alloyalPayload['password'] = $request->input('password');
-            }
+            if (!is_null($alloyalUser)) {
+                $alloyalPayload = [
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'cpf' => $data['document'],
+                    'cellphone' => $data['mobile'],
+                ];
 
-            $alloyalResponse = (new UserUpdate())->handle($alloyalPayload);
+                if ($request->filled('password')) {
+                    $alloyalPayload['password'] = $request->input('password');
+                }
 
-            if (isset($alloyalResponse['errors'])) {
-                $this->rollbackUserUpdate($user, $originalUser, $originalCustomer, $newPhotoPath, $oldPhotoPath);
+                $alloyalResponse = (new UserUpdate())->handle($alloyalPayload);
 
-                return response()->json([
-                    'status' => 400,
-                    'errors' => [
-                        'message' => [$alloyalResponse['errors'] ?? 'Falha ao atualizar na Alloyal'],
-                    ],
-                ]);
+                if (isset($alloyalResponse['errors'])) {
+                    $this->rollbackUserUpdate($user, $originalUser, $originalCustomer, $newPhotoPath, $oldPhotoPath);
+
+                    return response()->json([
+                        'status' => 400,
+                        'errors' => [
+                            'message' => [$alloyalResponse['errors'] ?? 'Falha ao atualizar na Alloyal'],
+                        ],
+                    ]);
+                }
             }
 
             return response()->json([
@@ -287,11 +319,13 @@ class UserController extends Controller
         $originalCustomerData = $user->customer ? $user->customer->replicate() : null;
 
         try {
-            $alloyalPayload = [
-                'cpf' => $user->customer?->document ?? $user->document ?? '',
-            ];
+            $alloyalUser = (new UserDetails())->handle($user->customer->document);
 
-            $alloyalResponse = (new UserDisable())->handle($alloyalPayload);
+            if (!is_null($alloyalUser)) {
+                $cpf = $user->customer?->document ?? $user->document ?? '';
+
+                $alloyalResponse = (new UserDisable())->handle($cpf);
+            }
 
             if (isset($alloyalResponse['errors'])) {
                 return response()->json([
@@ -308,6 +342,8 @@ class UserController extends Controller
                 }
 
                 $user->delete();
+
+                $user->customer->delete();
             });
 
             return response()->json([

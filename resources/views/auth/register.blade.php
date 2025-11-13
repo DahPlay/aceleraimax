@@ -454,13 +454,6 @@
                                 value="{{ old('credit_card_ccv', session('customerData')['credit_card_ccv'] ?? '') }}">
                         </div>
 
-                        @error('login')
-                            <span class="text-danger">{{ $message }}</span>
-                            <hr>
-                        @enderror
-
-
-
                         <div class="navigation-buttons">
                             <button type="button" class="btn btn-nav btn-back" data-prev="3"
                                 style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Voltar</button>
