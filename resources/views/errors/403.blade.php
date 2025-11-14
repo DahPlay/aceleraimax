@@ -1,4 +1,4 @@
-@extends("$routeAmbient.template.index")
+@extends("panel.template.index")
 
 @section('content')
     <div class="content-wrapper d-flex justify-content-center align-items-center">
@@ -12,13 +12,7 @@
                             <div class="error-content">
                                 <h3><i class="fas fa-exclamation-triangle text-danger"></i> Oops! Acesso Negado.</h3>
 
-                                <p>
-                                    Você não tem permissão para acessar esta página.
-                                    <a
-                                        href="{{ auth()->user()->access_id != 1 ? route('panel.main.index') : route('panel.main.index-user') }}">
-                                        retornar ao painel.
-                                    </a>
-                                </p>
+                                <p>Você não tem permissão para acessar esta página.</p>
 
                                 <hr>
                             </div>
@@ -29,6 +23,3 @@
         </div>
     </div>
 @endsection
-
-@includeIf("$routeAmbient.$routeCrud.local.index.head")
-@includeIf("$routeAmbient.$routeCrud.local.index.javascript")

@@ -13,6 +13,7 @@
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.2",
         "marvinlabs/laravel-discord-logger": "^1.4",
+        "opcodesio/log-viewer": "^3.21",
         "yajra/laravel-datatables": "^10.0",
         "yoeunes/toastr": "^2.3"
     },
