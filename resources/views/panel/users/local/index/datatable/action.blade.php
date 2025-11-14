@@ -19,7 +19,7 @@
 
         <div class="dropdown-divider"></div>
 
-        @if (isset($user->customer) && !is_null($user->customer->alloyal_id))
+        @if (filled($user->customer?->alloyal_id))
             @if (!is_null($user->customer->web_smart_link))
                 <a href='{{ $user->customer->web_smart_link }}' target="_blank" class='btn btn-info dropdown-item'>
                     <i class='fa fa-bell'></i>
