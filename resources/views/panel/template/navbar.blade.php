@@ -32,11 +32,7 @@
             <img src="{{ config('custom.logo_1') }}" alt="Logo" style="height: 30px; width: auto;">
         </a>
 
-        @if (
-            auth()->user()->access_id === 1 &&
-            isset(auth()->user()->customer) &&
-            !is_null(auth()->user()->customer->web_smart_link)
-        )
+        @if (auth()->user()->access_id === 1 && filled(auth()->user()->customer?->web_smart_link))
             <a href="{{ auth()->user()->customer->web_smart_link }}" target="_blank"
                 style="
                 background-color: #fff;
