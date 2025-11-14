@@ -18,6 +18,7 @@ class Customer extends Model
         'user_id',
         'customer_id',
         'viewers_id',
+        'alloyal_id',
         'login',
         'name',
         'document',

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('customers', function (Blueprint $table) {
-            $table->string('web_smart_link')->after('credit_card_token')->nullable();
+            $table->integer('alloyal_id')->after('viewers_id')->nullable();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('customers', function (Blueprint $table) {
-            $table->dropColumn('web_smart_link');
+            $table->dropColumn('alloyal_id');
         });
     }
 };

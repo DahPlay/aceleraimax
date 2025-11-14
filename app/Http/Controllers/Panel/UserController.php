@@ -72,15 +72,7 @@ class UserController extends Controller
             ->addColumn('action', function ($user) {
                 $loggedId = auth()->user()->id;
 
-                $alloyalUser = null;
-
-                if ($user->access_id === 1) {
-                    if (!is_null($user->customer) && !is_null($user->customer->document)) {
-                        $alloyalUser = (new UserDetails())->handle($user->customer->document);
-                    }
-                }
-
-                return view('panel.users.local.index.datatable.action', compact('user', 'loggedId', 'alloyalUser'));
+                return view('panel.users.local.index.datatable.action', compact('user', 'loggedId'));
             })
             ->make();
     }
@@ -152,7 +144,7 @@ class UserController extends Controller
         if ($user) {
             $cpf = $user->customer->document;
 
-            $smartLink = (new UserCreateSmartLink())->handle($cpf);
+            $alloyalResponse = (new UserCreateSmartLink())->handle($cpf);
 
             if (isset($alloyalResponse['errors'])) {
                 return response()->json([
@@ -164,13 +156,13 @@ class UserController extends Controller
             }
 
             $user->customer->update([
-                'web_smart_link' => $smartLink["web_smart_link"]
+                'web_smart_link' => $alloyalResponse["web_smart_link"]
             ]);
 
             Log::channel('alloyal')->info("SmartLink adicionado ao customer com sucesso", [
                 'user' => $user->name,
                 'customer' => $user->customer->name,
-                'web_smart_link' => $smartLink["web_smart_link"],
+                'web_smart_link' => $alloyalResponse["web_smart_link"],
                 'timestamp' => now()->toDateTimeString(),
             ]);
 

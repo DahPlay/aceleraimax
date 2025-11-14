@@ -53,7 +53,7 @@
                             .errors[item]);
                     });
 
-                    $(".btn-submit").removeAttr('disabled', true).text('Editar');
+                    $(".btn-submit").removeAttr('disabled', true).text('Confirmar');
                 } else if (data.status == 200) {
                     $(".modal").modal('hide');
 

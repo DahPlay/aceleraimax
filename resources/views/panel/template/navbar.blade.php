@@ -6,7 +6,8 @@
     </ul>
 
     {{-- Botão centralizado com proteção de clique --}}
-    <div class="position-absolute w-100 d-flex justify-content-center" style="left: 0; top: 50%; transform: translateY(-50%); pointer-events: none;">
+    <div class="position-absolute w-100 d-flex justify-content-center"
+        style="left: 0; top: 50%; transform: translateY(-50%); pointer-events: none;">
         <a href="{{ config('custom.portal_link') }}" target="_blank"
             style="
                 background-color: {{ config('custom.background_home_color') }};
@@ -26,11 +27,42 @@
                 z-index: 0;
             "
             onmouseover="this.style.boxShadow='0 0 20px rgba(255, 255, 255, 0.4)'"
-            onmouseout="this.style.boxShadow='0 0 10px rgba(0, 0, 0, 0.2)'"
-        >
+            onmouseout="this.style.boxShadow='0 0 10px rgba(0, 0, 0, 0.2)'">
             <span>ACESSE O PORTAL</span>
             <img src="{{ config('custom.logo_1') }}" alt="Logo" style="height: 30px; width: auto;">
         </a>
+
+        @if (
+            auth()->user()->access_id === 1 &&
+            isset(auth()->user()->customer) &&
+            !is_null(auth()->user()->customer->web_smart_link)
+        )
+            <a href="{{ auth()->user()->customer->web_smart_link }}" target="_blank"
+                style="
+                background-color: #fff;
+                padding: 10px 30px;
+                border-radius: 12px;
+                text-align: center;
+                text-decoration: none;
+                color: #000;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                transition: all 0.3s ease;
+                font-size: 18px;
+                font-weight: bold;
+                pointer-events: auto;
+                z-index: 0;
+                margin-left: 10px;
+            "
+                onmouseover="this.style.boxShadow='0 0 20px rgba(255, 255, 255, 0.4)'"
+                onmouseout="this.style.boxShadow='0 0 10px rgba(0, 0, 0, 0.2)'">
+                <span>ACESSE A ALLOYAL</span>
+                <img src="{{ asset('Auth-Panel/dist/img/logo-alloyal.svg') }}" alt="Logo"
+                    style="height: 30px; width: auto;">
+            </a>
+        @endif
     </div>
 
     <div class="ml-auto d-flex align-items-center">

@@ -44,20 +44,6 @@ class RegistrationService
 
             $asaasCustomerId = $this->createAsaasCustomer($customerData);
 
-            $alloyalPayload = [
-                'name' => $customerData['name'],
-                'email' => $customerData['email'],
-                'cpf' => $customerData['document'],
-                'cellphone' => $customerData['mobile'],
-                'password' => $data['password'],
-            ];
-
-            $alloyalResponse = (new UserCreate())->handle($alloyalPayload);
-
-            Log::channel('registration')->info('Usuário criado com sucesso no Alloyal', [
-                'cpf' => $data['document'],
-            ]);
-
             try {
                 $creditCardData = $this->extractCreditCardData($data);
                 Log::channel('registration')->info('Tentando tokenizar cartão', [
@@ -95,6 +81,16 @@ class RegistrationService
             $userConsent = $this->createUserConsent((int) $user->id);
             Log::channel('registration')->debug('UserConsent local criado', ['email' => $userConsent->id]);
 
+            $alloyalPayload = [
+                'name' => $customerData['name'],
+                'email' => $customerData['email'],
+                'cpf' => $customerData['document'],
+                'cellphone' => $customerData['mobile'],
+                'password' => $data['password'],
+            ];
+
+            $alloyalResponse = $this->createUserAlloyal($alloyalPayload, $customer);
+
             if ($asaasCustomerId) {
                 $customer->update([
                     'customer_id' => $asaasCustomerId,
@@ -124,6 +120,35 @@ class RegistrationService
 
             return $customer;
         });
+    }
+
+    private function createUserAlloyal(array $alloyalPayload, Customer $customer)
+    {
+        $alloyalResponse = (new UserCreate())->handle($alloyalPayload);
+
+        if (isset($alloyalResponse['errors'])) {
+            return response()->json([
+                'status' => 400,
+                'errors' => [
+                    'message' => [$alloyalResponse['errors'] ?? 'Falha ao criar o Usuário na Alloyal'],
+                ],
+            ]);
+        }
+
+        Log::channel('registration')->info('Usuário criado com sucesso no Alloyal', [
+            'cpf' => $alloyalPayload['cpf'],
+            'alloyal_id' => $alloyalResponse['id'],
+        ]);
+
+        $customer->update([
+            'alloyal_id' => $alloyalResponse["id"]
+        ]);
+
+        Log::channel('registration')->info('Usuário da alloyal salvo na tabela de customers', [
+            'id' => $customer->id,
+            'cpf' => $alloyalPayload['cpf'],
+            'alloyal_id' => $alloyalResponse['id'],
+        ]);
     }
 
     private function deleteAsaasCustomer(string $customerId): void
