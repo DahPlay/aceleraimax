@@ -296,6 +296,9 @@
                             <input type="text" name="name" id="name" class="form-control"
                                 placeholder="Digite seu nome completo *" required
                                 value="{{ old('name', session('customerData')['name'] ?? '') }}">
+                            <span id="name-error" class="mt-1 small text-danger d-none">
+                                ⚠️ Por favor, informe seu nome e sobrenome.
+                            </span>
                         </div>
 
                         @error('name')
@@ -600,6 +603,24 @@
             }
             initStepNavigation();
 
+            $('#name').on('blur input', function() {
+                const value = $(this).val().trim();
+                const parts = value.split(/\s+/).filter(part => part.length > 0);
+                const hasFullName = parts.length >= 2;
+
+                if (!hasFullName && value !== '') {
+                    $('#name-error').removeClass('d-none');
+                    $(this).addClass('is-invalid');
+                } else {
+                    $('#name-error').addClass('d-none');
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            $('form').on('submit', function() {
+                $('#name-error').addClass('d-none');
+                $('#name').removeClass('is-invalid');
+            });
         });
 
         function initSelects2() {

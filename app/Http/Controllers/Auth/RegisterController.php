@@ -51,7 +51,18 @@ class RegisterController extends Controller
     {
         return Validator::make($data, [
             'id' => ['integer'],
-            'name' => ['required', 'string'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-ZÀ-ÿ\s]+ [a-zA-ZÀ-ÿ\s]+$/',
+                function ($attribute, $value, $fail) {
+                    $parts = array_filter(array_map('trim', explode(' ', $value)));
+                    if (count($parts) < 2) {
+                        $fail('O campo Nome deve conter nome e sobrenome.');
+                    }
+                },
+            ],
             'document' => ['required', new \App\Rules\Cpf()],
             'mobile' => ['required', 'string'],
             'birthdate' => ['date'],
