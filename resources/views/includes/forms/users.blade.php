@@ -12,7 +12,7 @@
                 <div class="card">
                     <div class="card-body m-auto">
                         <img width="100" data-url="/user/removeImage/" data-id="{{ $user->id }}"
-                            data-token={{ csrf_token() }} src="{{ asset('storage/' . $user->photo) }}" alt="">
+                            data-token={{ csrf_token() }} src="{{ asset($user->photo) }}" alt="">
                         @if ($user->photo != 'avatars/default.png')
                             <button type="button" class="btn-remove" title="Remover">x</button>
                         @endif
