@@ -33,9 +33,12 @@
     <div class="row">
         <div class="form-group col-6">
             <label for="name" class="col-form-label text-danger">Nome: *</label>
-            <div class="input-group">
-                <input type="text" id="name" class="form-control" name="name" placeholder="Nome *"
+            <div class="input-group flex-column">
+                <input type="text" id="name" class="form-control w-100" name="name" placeholder="Nome *"
                     value="{{ $user->name ?? old('name') }}" required>
+                <span id="name-error" class="mt-1 small text-danger d-none">
+                    ⚠️ Por favor, informe seu nome e sobrenome.
+                </span>
             </div>
         </div>
         <div class="form-group col-3">
@@ -130,7 +133,29 @@
     $(function() {
         initSelects2();
         initMasks();
+
+        const $nameInput = $('#name');
+
+        validateFullNameInput($nameInput);
+
+        $nameInput.on('blur input', function() {
+            validateFullNameInput($(this));
+        });
     });
+
+    function validateFullNameInput($input) {
+        const value = $input.val().trim();
+        const parts = value.split(/\s+/).filter(part => part.length > 0);
+        const hasFullName = parts.length >= 2;
+
+        if (!hasFullName && value !== '') {
+            $('#name-error').removeClass('d-none');
+            $input.addClass('is-invalid');
+        } else {
+            $('#name-error').addClass('d-none');
+            $input.removeClass('is-invalid');
+        }
+    }
 
     function initSelects2() {
         $('#access_id').select2({

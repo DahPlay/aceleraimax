@@ -5,9 +5,12 @@
             <div class="input-group">
                 <input type="text" id="name" class="form-control" name="name" placeholder="Nome *"
                     value="{{ $customer->name ?? old('name') }}" required>
+                <span id="name-error" class="mt-1 small text-danger d-none">
+                    ⚠️ Por favor, informe seu nome e sobrenome.
+                </span>
             </div>
         </div>
-         <div class="form-group col-12 col-md-4">
+        <div class="form-group col-12 col-md-4">
             <label for="mobile" class="col-form-label text-danger">Celular: *</label>
             <div class="input-group">
                 <input type="text" id="mobile" class="form-control" name="mobile" placeholder="Celular *"
@@ -26,26 +29,26 @@
         <div class="form-group col-12 col-md-4">
             <label for="cpf_dependente_1" class="col-form-label text-danger">CPF Dependente 1:</label>
             <div class="input-group">
-                <input type="text" id="cpf_dependente_1" class="form-control" name="cpf_dependente_1" placeholder="CPF Dependente 1"
-                    value="{{ $customer->cpf_dependente_1 ?? old('cpf_dependente_1') }}">
+                <input type="text" id="cpf_dependente_1" class="form-control" name="cpf_dependente_1"
+                    placeholder="CPF Dependente 1" value="{{ $customer->cpf_dependente_1 ?? old('cpf_dependente_1') }}">
             </div>
         </div>
         <div class="form-group col-12 col-md-4">
             <label for="cpf_dependente_2" class="col-form-label text-danger">CPF Dependente 2:</label>
             <div class="input-group">
-                <input type="text" id="cpf_dependente_2" class="form-control" name="cpf_dependente_2" placeholder="CPF Dependente 2"
-                    value="{{ $customer->cpf_dependente_2 ?? old('cpf_dependente_2') }}">
+                <input type="text" id="cpf_dependente_2" class="form-control" name="cpf_dependente_2"
+                    placeholder="CPF Dependente 2" value="{{ $customer->cpf_dependente_2 ?? old('cpf_dependente_2') }}">
             </div>
         </div>
         <div class="form-group col-12 col-md-4">
             <label for="cpf_dependente_3" class="col-form-label text-danger">CPF Dependente 3:</label>
             <div class="input-group">
-                <input type="text" id="cpf_dependente_3" class="form-control" name="cpf_dependente_3" placeholder="CPF Dependente 3"
-                    value="{{ $customer->cpf_dependente_3 ?? old('cpf_dependente_3') }}">
+                <input type="text" id="cpf_dependente_3" class="form-control" name="cpf_dependente_3"
+                    placeholder="CPF Dependente 3" value="{{ $customer->cpf_dependente_3 ?? old('cpf_dependente_3') }}">
             </div>
         </div>
 
-       
+
     </div>
 
     <div class="row">
@@ -117,7 +120,29 @@
     $(function() {
         initSelects2();
         initMasks();
+
+        const $nameInput = $('#name');
+
+        validateFullNameInput($nameInput);
+
+        $nameInput.on('blur input', function() {
+            validateFullNameInput($(this));
+        });
     });
+
+    function validateFullNameInput($input) {
+        const value = $input.val().trim();
+        const parts = value.split(/\s+/).filter(part => part.length > 0);
+        const hasFullName = parts.length >= 2;
+
+        if (!hasFullName && value !== '') {
+            $('#name-error').removeClass('d-none');
+            $input.addClass('is-invalid');
+        } else {
+            $('#name-error').addClass('d-none');
+            $input.removeClass('is-invalid');
+        }
+    }
 
     function initSelects2() {
         $('#user_id').select2({

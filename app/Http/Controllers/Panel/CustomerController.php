@@ -102,7 +102,18 @@ class CustomerController extends Controller
 
         $validator = Validator::make($data, [
             'id' => ['integer'],
-            'name' => ['required', 'string'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-ZÀ-ÿ\s]+ [a-zA-ZÀ-ÿ\s]+$/',
+                function ($attribute, $value, $fail) {
+                    $parts = array_filter(array_map('trim', explode(' ', $value)));
+                    if (count($parts) < 2) {
+                        $fail('O campo Nome deve conter nome e sobrenome.');
+                    }
+                },
+            ],
             'document' => ['required', 'string', 'unique_document:customers,document'],
             'mobile' => ['required', 'string'],
             'birthdate' => ['nullable', 'date'],
@@ -167,7 +178,18 @@ class CustomerController extends Controller
 
             $validator = Validator::make($data, [
                 'id' => ['integer'],
-                'name' => ['required', 'string'],
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^[a-zA-ZÀ-ÿ\s]+ [a-zA-ZÀ-ÿ\s]+$/',
+                    function ($attribute, $value, $fail) {
+                        $parts = array_filter(array_map('trim', explode(' ', $value)));
+                        if (count($parts) < 2) {
+                            $fail('O campo Nome deve conter nome e sobrenome.');
+                        }
+                    },
+                ],
                 'document' => ['required', 'string'],
                 'mobile' => ['required', 'string'],
                 'birthdate' => ['nullable', 'date'],

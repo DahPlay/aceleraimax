@@ -24,6 +24,18 @@
     $("#formEdit{{ ucfirst($routeCrud) }}").on('submit', function(e) {
         e.preventDefault();
 
+        const $nameInput = $('#name');
+
+        if ($('#name-error').hasClass('d-none') === false) {
+            e.preventDefault();
+            $nameInput.focus();
+
+            toastMessage('fa fa-exclamation', 'bg-info', 'Atenção!',
+                '⚠️ Por favor, informe seu nome e sobrenome');
+
+            return false;
+        }
+
         $(".btn-submit").attr('disabled', true).text('Enviando...');
 
         var id = $("#id").val();

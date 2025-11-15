@@ -17,7 +17,18 @@ class UserStoreRequest extends FormRequest
     {
         return [
             'photo' => 'nullable|image|mimes:jpeg,jpg,png|max:500',
-            'name' => ['required', 'string', 'max:100'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-ZÀ-ÿ\s]+ [a-zA-ZÀ-ÿ\s]+$/',
+                function ($attribute, $value, $fail) {
+                    $parts = array_filter(array_map('trim', explode(' ', $value)));
+                    if (count($parts) < 2) {
+                        $fail('O campo Nome deve conter nome e sobrenome.');
+                    }
+                },
+            ],
             'email' => ['required', 'email', 'max:200', 'unique:users'],
             'login' => ['nullable', 'string', 'max:50'],
             'password' => ['required', 'string', 'min:4', 'confirmed'],
@@ -33,6 +44,6 @@ class UserStoreRequest extends FormRequest
         throw new HttpResponseException(response()->json([
             'status' => 400,
             'errors' => $validator->errors()
-        ], 400));
+        ]));
     }
 }
