@@ -18,3 +18,7 @@
 [2025-11-17 19:01:56] local.ERROR: Falha na consulta ao Alloyal {"cpf":"24800336007","exception":"cURL error 6: Could not resolve host: api-hml.lecupon.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-hml.lecupon.com/client/v2/businesses/2415/users/24800336007"} 
 [2025-11-17 19:03:30] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"24800336007"} 
 [2025-11-17 19:03:30] local.DEBUG: Usuário NÃO encontrado no Alloyal {"cpf":"24800336007","response_time_ms":197.24} 
+[2025-11-17 20:22:17] local.DEBUG: Início de sincronização de usuário com Alloyal {"user_id":4,"cpf":"25375318091","timestamp":"2025-11-17 20:22:17"} 
+[2025-11-17 20:22:17] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"25375318091"} 
+[2025-11-17 20:22:18] local.ERROR: Falha na consulta ao Alloyal {"cpf":"25375318091","exception":"cURL error 6: Could not resolve host: api-hml.lecupon.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-hml.lecupon.com/client/v2/businesses/2415/users/25375318091"} 
+[2025-11-17 20:22:18] local.ERROR: Falha ao sincronizar usuário com Alloyal {"user_id":4,"cpf":"25375318091","exception_class":"Illuminate\\Http\\Client\\ConnectionException","exception_message":"cURL error 6: Could not resolve host: api-hml.lecupon.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-hml.lecupon.com/client/v2/businesses/2415/users/25375318091","response_time_ms":114.4} 

@@ -8,9 +8,10 @@
     <div class="sidebar">
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
             <div class="image">
-                <img src="{{file_exists(storage_path('app/public/' . auth()->user()->photo))
-    ? asset('storage/' . auth()->user()->photo)
-    : asset(auth()->user()->photo) }}" class="img-circle elevation-2" alt="User Image">
+                <img src="{{ file_exists(storage_path('app/public/' . auth()->user()->photo))
+                    ? asset('storage/' . auth()->user()->photo)
+                    : asset(auth()->user()->photo) }}"
+                    class="img-circle elevation-2" alt="User Image">
             </div>
             <div class="info">
                 <a href="#" class="d-block">{{ auth()->user()->name ?? 'Desconhecido' }}</a>
@@ -54,11 +55,11 @@
                         <a href="{{ route('panel.users.index') }}"
                             class="nav-link {{ request()->is('users') ? 'active' : '' }}">
                             <i class="nav-icon fa fa-user"></i>
-                             @if(auth()->user()->access && auth()->user()->access->name === 'User')
-                                    <p>Usuário</p>
-                                @else
-                                    <p>Clientes</p>
-                                @endif
+                            @if (auth()->user()->access && auth()->user()->access->name === 'User')
+                                <p>Usuário</p>
+                            @else
+                                <p>Clientes</p>
+                            @endif
                         </a>
                     </li>
                 @endcan
@@ -80,13 +81,13 @@
                         <a href="{{ route('panel.customers.index') }}"
                             class="nav-link {{ request()->is('customers') ? 'active' : '' }}">
                             <i class="nav-icon fa fa-users"></i>
-                           
-                                @if(auth()->user()->access && auth()->user()->access->name === 'User')
-                                    <p>Minha Conta</p>
-                                @else
-                                    <p>Cobranças</p>
-                                @endif
-                           
+
+                            @if (auth()->user()->access && auth()->user()->access->name === 'User')
+                                <p>Minha Conta</p>
+                            @else
+                                <p>Cobranças</p>
+                            @endif
+
                         </a>
                     </li>
                 @endcan
@@ -136,13 +137,49 @@
                         </p>
                     </a>
                 </li>
-                 <li class="nav-item">
-                    <a href="{{ config('custom.portal_link') }}" target="_blank" class="nav-link text-white"
-                        style="background-color: {{ config('custom.background_home_color') }}; border-radius: 10px; margin: 10px; display: flex; align-items: center; padding: 10px;">
+                <li class="nav-item">
+                    <a href="{{ config('custom.portal_link') }}"
+                    target="_blank" class="nav-link text-white"
+                        style="
+                        background-color: {{ config('custom.background_home_color') }};
+                        border-radius: 10px;
+                        margin: 10px;
+                        display: flex;
+                        align-items: center;
+                        transition: all 0.3s ease;
+                        padding: 10px;"
+                        onmouseover="this.style.boxShadow='0 0 20px rgba(255, 255, 255, 0.4)'"
+                        onmouseout="this.style.boxShadow='0 0 10px rgba(0, 0, 0, 0.2)'"
+                        >
                         <img src="{{ config('custom.logo_2') }}" alt="Portal"
                             style="width: 45px; height: 45px; object-fit: contain; margin-right: 15px;">
                         <p style="margin: 0; font-weight: bold; font-size: 16px;">Acessar
                             {{ config('custom.project_name') }}
+                        </p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ auth()->user()->customer->web_smart_link }}" target="_blank"
+                        class="nav-link text-white"
+                        style="
+                            background-color: #fff;
+                            border-radius: 12px;
+                            text-decoration: none;
+                            color: #000;
+                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                            transition: all 0.3s ease;
+                            border-radius: 10px;
+                            display: flex;
+                            align-items: center;
+                            padding: 10px;
+                            margin: 10px;
+                        "
+                        onmouseover="this.style.boxShadow='0 0 20px rgba(255, 255, 255, 0.4)'"
+                        onmouseout="this.style.boxShadow='0 0 10px rgba(0, 0, 0, 0.2)'">
+                        <img src="{{ asset('Auth-Panel/dist/img/logo-alloyal.svg') }}" alt="Alloyal"
+                            style="width: 45px; height: 45px; object-fit: contain; margin-right: 15px;">
+                        <p style="margin: 0; font-weight: bold; font-size: 16px;" class="text-body">Acessar a Alloyal
                         </p>
                     </a>
                 </li>
