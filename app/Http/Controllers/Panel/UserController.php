@@ -8,7 +8,6 @@ use App\Http\Requests\UserUpdateRequest;
 use App\Models\Access;
 use App\Models\Customer;
 use App\Models\User;
-use App\Services\Alloyal\User\UserCreate;
 use App\Services\Alloyal\User\UserCreateSmartLink;
 use App\Services\Alloyal\User\UserDetails;
 use App\Services\Alloyal\User\UserDisable;
@@ -118,7 +117,7 @@ class UserController extends Controller
                 Storage::disk('public')->delete($photoPath);
             }
 
-            Log::error('Falha na criação de usuário', [
+            Log::channel('alloyal')->info('Falha no update do usuário', [
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

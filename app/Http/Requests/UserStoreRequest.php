@@ -21,7 +21,7 @@ class UserStoreRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-zA-ZÀ-ÿ\s]+ [a-zA-ZÀ-ÿ\s]+$/',
+                'regex:/^[a-zA-ZÀ-ÿ0-9\s]+ [a-zA-ZÀ-ÿ0-9\s]+$/',
                 function ($attribute, $value, $fail) {
                     $parts = array_filter(array_map('trim', explode(' ', $value)));
                     if (count($parts) < 2) {
