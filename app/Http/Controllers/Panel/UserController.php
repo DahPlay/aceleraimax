@@ -137,7 +137,7 @@ class UserController extends Controller
         return view('panel.users.local.index.modals.create-smart-link', compact("user"));
     }
 
-    public function storeSmartLink(Request $request, $id): JsonResponse
+    public function storeSmartLink($id): JsonResponse
     {
         $user = $this->model->with('customer')->findOrFail($id);
 

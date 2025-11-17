@@ -12,7 +12,7 @@ Trait AlloyalClient
         protected ?string $password = null,
         protected array $data = [],
     ) {
-        $this->environment = app()->isLocal() ? 'sandbox' : 'production';
+        $this->environment = app()->isLocal() ? 'production' : 'sandbox';
         $this->base_url = config("alloyal.{$this->environment}.base_url");
         $this->business_id = config("alloyal.{$this->environment}.business_id");
         $this->token = config("alloyal.{$this->environment}.token");

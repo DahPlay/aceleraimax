@@ -2,6 +2,7 @@
 
 namespace App\Services\Alloyal\User;
 
+use App\Models\Customer;
 use App\Models\User;
 use App\Services\Alloyal\User\UserCreate;
 use App\Services\Alloyal\User\UserDetails;
@@ -47,6 +48,10 @@ class UserSyncService
                     'response_time_ms' => round($durationMs, 2),
                 ]);
             }
+
+            if (!is_null($localUser->customer) && is_null($localUser->customer->web_smart_link)) {
+                $this->userCreateSmartLink($cpf);
+            }
         } catch (\Exception $e) {
             $durationMs = (microtime(true) - $startTime) * 1000;
 
@@ -58,5 +63,32 @@ class UserSyncService
                 'response_time_ms' => round($durationMs, 2),
             ]);
         }
+    }
+
+    function userCreateSmartLink(string $cpf)
+    {
+        $alloyalResponse = (new UserCreateSmartLink())->handle($cpf);
+
+        if (isset($alloyalResponse['errors'])) {
+            return response()->json([
+                'status' => 400,
+                'errors' => [
+                    'message' => [$alloyalResponse['errors'] ?? 'Falha ao criar o Smart Link na Alloyal'],
+                ],
+            ]);
+        }
+
+        $customer = Customer::where('document', $cpf);
+
+        $customer->update([
+            'web_smart_link' => $alloyalResponse["web_smart_link"]
+        ]);
+
+        Log::channel('alloyal')->info("SmartLink adicionado ao customer com sucesso", [
+            'user' => $customer->name,
+            'customer' => $customer->name,
+            'web_smart_link' => $alloyalResponse["web_smart_link"],
+            'timestamp' => now()->toDateTimeString(),
+        ]);
     }
 }

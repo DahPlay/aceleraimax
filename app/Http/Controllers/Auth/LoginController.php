@@ -135,10 +135,15 @@ class LoginController extends Controller
             }
 
             if (auth()->attempt(['login' => $login, 'password' => $password])) {
-                if ($localUser->access_id === 1 && !is_null($localUser->customer->order)) {
-                    if ($localUser->customer->order->status !== 'INACTIVE') {
-                        app(UserSyncService::class)->ensureUserExistsInAlloyal($localUser, $password);
-                    }
+
+                if ($localUser->access_id !== 1 || $localUser->customer === null) {
+                    return redirect()->route('panel.main.index');
+                }
+
+                $order = $localUser->customer->orders()->latest('id')->first();
+
+                if ($order?->status !== 'INACTIVE') {
+                    app(UserSyncService::class)->ensureUserExistsInAlloyal($localUser, $password);
                 }
 
                 if ($localUser->access_id === 1) {
