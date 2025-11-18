@@ -6,8 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
-use App\Services\Alloyal\User\UserCreate;
-use App\Services\Alloyal\User\UserDetails;
+use App\Services\Alloyal\User\UserCreateSmartLink;
 use App\Services\Alloyal\User\UserSyncService;
 use App\Services\AppIntegration\CustomerService;
 use App\Services\AppIntegration\UserService;
@@ -15,6 +14,7 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class LoginController extends Controller
@@ -147,6 +147,10 @@ class LoginController extends Controller
                 }
 
                 if ($localUser->access_id === 1) {
+                    if ((isset($localUser->customer) && !is_null($localUser->customer->document))) {
+                        $this->userCreateSmartLink($localUser->customer->document);
+                    }
+
                     return redirect()->route('panel.main.index-user');
                 }
             }
@@ -155,6 +159,33 @@ class LoginController extends Controller
         }
 
         return $this->sendFailedLoginResponse($request);
+    }
+
+    function userCreateSmartLink(string $cpf)
+    {
+        $alloyalResponse = (new UserCreateSmartLink())->handle($cpf);
+
+        if (isset($alloyalResponse['errors'])) {
+            return response()->json([
+                'status' => 400,
+                'errors' => [
+                    'message' => [$alloyalResponse['errors'] ?? 'Falha ao criar o Smart Link na Alloyal'],
+                ],
+            ]);
+        }
+
+        $customer = Customer::where('document', $cpf)->first();
+
+        $customer->update([
+            'web_smart_link' => $alloyalResponse["web_smart_link"]
+        ]);
+
+        Log::channel('alloyal')->info("SmartLink adicionado ao customer com sucesso", [
+            'user' => $customer->name,
+            'customer' => $customer->name,
+            'web_smart_link' => $alloyalResponse["web_smart_link"],
+            'timestamp' => now()->toDateTimeString(),
+        ]);
     }
 
     private function createUser(Customer $customer): void
