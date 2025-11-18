@@ -153,34 +153,30 @@
                         </p>
                     </a>
                 </li>
-
-                <li class="nav-item">
-                    <a href="
-                        @if (auth()->user()->customer && auth()->user()->customer->web_smart_link)
-                            {{ auth()->user()->customer->web_smart_link }}
-                        @else
-                            #
-                        @endif
-                        " target="_blank" class="nav-link text-white" style="
-                            background-color: #fff;
-                            border-radius: 12px;
-                            text-decoration: none;
-                            color: #000;
-                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-                            transition: all 0.3s ease;
-                            border-radius: 10px;
-                            display: flex;
-                            align-items: center;
-                            padding: 10px;
-                            margin: 10px;
-                        " onmouseover="this.style.boxShadow='0 0 20px rgba(255, 255, 255, 0.4)'"
-                        onmouseout="this.style.boxShadow='0 0 10px rgba(0, 0, 0, 0.2)'">
-                        <img src="{{ asset('Auth-Panel/dist/img/logo-alloyal.svg') }}" alt="Alloyal"
-                            style="width: 45px; height: 45px; object-fit: contain; margin-right: 15px;">
-                        <p style="margin: 0; font-weight: bold; font-size: 16px;" class="text-body">Acessar a Alloyal
-                        </p>
-                    </a>
-                </li>
+                @if (auth()->user()->access_id == 1)
+                    <li class="nav-item">
+                        <a href="{{ auth()->user()->customer->web_smart_link }}" target="_blank" class="nav-link text-white"
+                            style="
+                                background-color: #fff;
+                                border-radius: 12px;
+                                text-decoration: none;
+                                color: #000;
+                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                                transition: all 0.3s ease;
+                                border-radius: 10px;
+                                display: flex;
+                                align-items: center;
+                                padding: 10px;
+                                margin: 10px;
+                            " onmouseover="this.style.boxShadow='0 0 20px rgba(255, 255, 255, 0.4)'"
+                            onmouseout="this.style.boxShadow='0 0 10px rgba(0, 0, 0, 0.2)'">
+                            <img src="{{ asset('Auth-Panel/dist/img/logo-alloyal.svg') }}" alt="Alloyal"
+                                style="width: 45px; height: 45px; object-fit: contain; margin-right: 15px;">
+                            <p style="margin: 0; font-weight: bold; font-size: 16px;" class="text-body">Acessar a Alloyal
+                            </p>
+                        </a>
+                    </li>
+                @endif
 
                 @php
                     $baseUrl = config('app.url');
