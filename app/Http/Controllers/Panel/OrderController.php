@@ -112,13 +112,6 @@ class OrderController extends Controller
                     return 'Free';
                 }
 
-                $currentDate = Carbon::now()->startOfDay();
-                $nextDueDate = Carbon::parse($order->next_due_date)->startOfDay();
-
-                if ($nextDueDate > $currentDate) {
-                    return 'GRÁTIS';
-                }
-
                 return PaymentStatusOrderAsaasEnum::tryFrom($order->payment_status)?->getName() ?? $order->payment_status;
             })
             ->editColumn('payment_asaas_id', function ($item) {
