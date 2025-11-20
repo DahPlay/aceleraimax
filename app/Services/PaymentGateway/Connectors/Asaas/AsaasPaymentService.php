@@ -28,15 +28,15 @@ class AsaasPaymentService
 
         $order = Order::where('subscription_asaas_id', $subscriptionId)->first();
 
-        Log::info('AsaasPaymentService acionado');
+        Log::channel('payment')->info('AsaasPaymentService acionado');
         if (!$order) {
-            Log::warning("Ordem não encontrada para a assinatura $subscriptionId no evento $event.");
+            Log::channel('payment')->warning("Ordem não encontrada para a assinatura $subscriptionId no evento $event.");
             return false;
         }
 
         switch ($event) {
             case 'PAYMENT_RECEIVED':
-//para aplicar o cupom de desconto somente na primeira mensalidade, descomente abaixo
+                //para aplicar o cupom de desconto somente na primeira mensalidade, descomente abaixo
                 if ($order->changed_plan /*|| $order->value != $plan->value*/) {
                     updateSubscriptionAfterProportionalPayJob::dispatch($order);
                 }
@@ -48,7 +48,7 @@ class AsaasPaymentService
                     'payment_date' => $paymentDate,
                 ]);
 
-                Log::info("Pagamento confirmado para a ordem {$order->id}.");
+                Log::channel('payment')->info("Pagamento confirmado para a ordem {$order->id}.");
                 //este if impede que seja enviado cupom de desconto durante a troca de plano
                 // remova o if depois de implementar cupom na troca de plano
                 if (!$order->changed_plan) {
@@ -94,7 +94,7 @@ class AsaasPaymentService
                     'next_due_date' => $dueDate,
                 ]);
 
-                Log::info("Pagamento criado para a ordem {$order->id}.");
+                Log::channel('payment')->info("Pagamento criado para a ordem {$order->id}.");
                 break;
 
             case 'PAYMENT_CONFIRMED':
@@ -102,7 +102,7 @@ class AsaasPaymentService
                     'payment_status' => $paymentStatus,
                 ]);
 
-                Log::info("Pagamento criado para a ordem {$order->id}.");
+                Log::channel('payment')->info("Pagamento criado para a ordem {$order->id}.");
 
                 break;
 
@@ -121,7 +121,9 @@ class AsaasPaymentService
 
                 $alloyalResponse = (new UserDisable())->handle($cpf);
 
-                Log::warning("Pagamento atrasado para a ordem {$order->id}.");
+                Log::channel('payment')->info('Usuário inativado com sucesso no Alloyal');
+
+                Log::channel('payment')->warning("Pagamento atrasado para a ordem {$order->id}.");
 
                 $youcast = (new PlanList)->handle($order->customer->viewers_id);
 
@@ -146,12 +148,12 @@ class AsaasPaymentService
             case 'PAYMENT_DELETED':
                 $order->update(['payment_status' => $paymentStatus]);
 
-                Log::info("AssasPaymentService - linha 91 - Pagamento cancelado para a ordem {$order->id}.");
+                Log::channel('payment')->info("Pagamento cancelado para a ordem {$order->id}.");
 
                 break;
 
             default:
-                Log::info("Evento de pagamento não tratado: $event");
+                Log::channel('payment')->info("Evento de pagamento não tratado: $event");
                 return false;
         }
 

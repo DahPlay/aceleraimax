@@ -117,7 +117,7 @@ class UserController extends Controller
                 Storage::disk('public')->delete($photoPath);
             }
 
-            Log::channel('alloyal')->info('Falha no update do usuário', [
+            Log::channel('alloyal')->info('Falha ao criar usuário', [
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -129,14 +129,7 @@ class UserController extends Controller
         }
     }
 
-    public function createSmartLink($id): View
-    {
-        $user = $this->model->find($id);
-
-        return view('panel.users.local.index.modals.create-smart-link', compact("user"));
-    }
-
-    public function storeSmartLink($id): JsonResponse
+    public function createSmartLink($id): View | JsonResponse
     {
         $user = $this->model->with('customer')->findOrFail($id);
 
@@ -165,10 +158,7 @@ class UserController extends Controller
                 'timestamp' => now()->toDateTimeString(),
             ]);
 
-            return response()->json([
-                'status' => 200,
-                'message' => 'Smart Link gerado com sucesso!',
-            ]);
+            return view('panel.users.local.index.modals.create-smart-link', compact("user"));
         }
 
         return response()->json([

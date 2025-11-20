@@ -1,4 +1,3 @@
-<!-- jQuery -->
 <script src="{{ asset('Auth-Panel/plugins/jquery/jquery.min.js') }}"></script>
 <script src="{{ asset('Auth-Panel/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('Auth-Panel/dist/js/adminlte.js') }}"></script>
@@ -32,6 +31,10 @@
         $(document).on('change', "#btn-marcar-todos", function() {
             $(".checkbox").prop('checked', $(this).prop(
                 "checked"));
+        });
+
+        $(document).on('click', ".btn-add-smart-link", function(e) {
+            openModal(this, e, 'modal-md');
         });
     });
 

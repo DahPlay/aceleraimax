@@ -33,6 +33,7 @@ class Order extends Model
         'value',
         'cycle',
         'billing_type',
+        'due_date_free',
         'next_due_date',
         'end_date',
         'status',

@@ -378,6 +378,7 @@ class RegistrationService
             'value' => $value,
             'cycle' => $plan->cycle,
             'billing_type' => 'CREDIT_CARD',
+            'due_date_free' => now()->addDays($plan->free_for_days)->format('Y-m-d'),
             'next_due_date' => now()->addDays($plan->free_for_days)->format('Y-m-d'),
             'original_plan_value' => $plan->value,
             'consent_id' => $consent_id,

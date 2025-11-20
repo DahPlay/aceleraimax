@@ -1,73 +1,39 @@
-<div class="modal-content">
+<div class="modal-content bg-gradient-light">
     <div class="modal-header">
-        <h4 class="modal-title">Criar Smart Link na Alloyal</h4>
+        <h4 class="modal-title">{{ $user->name }} tem certeza que deseja acessar a Alloyal?</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
-    <form id="formCreateSmartLink{{ ucfirst($routeCrud) }}">
-        @csrf
-        @method('PUT')
 
-        <input type="hidden" id="id" name="id" value="{{ $user->id }}">
-
-        <div class="modal-body">
-            <div class="row d-flex align-items-center">
-                <div class="col-12">
-                    <p>Clique em confirmar para gerar o Smart Link na Alloyal</p>
-                </div>
+    <div class="modal-body">
+        <div class="row d-flex align-items-center">
+            <div class="col-12">
+                <a href="{{ $user->customer->web_smart_link }}" target="_blank" class="nav-link text-white"
+                    style="
+                                background-color: #fff;
+                                border-radius: 12px;
+                                text-decoration: none;
+                                color: #000;
+                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                                transition: all 0.3s ease;
+                                border-radius: 10px;
+                                display: flex;
+                                align-items: center;
+                                padding: 10px;
+                                margin: 10px;
+                            ">
+                    <img src="{{ asset('Auth-Panel/dist/img/logo-alloyal.svg') }}" alt="Alloyal"
+                        style="width: 45px; height: 45px; object-fit: contain; margin-right: 15px;">
+                    <p style="margin: 0; font-weight: bold; font-size: 16px;" class="text-body">Acessar a
+                        Alloyal
+                    </p>
+                </a>
             </div>
         </div>
+    </div>
 
-        <div class="modal-footer justify-content-between">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary btn-submit">Confirmar</button>
-        </div>
-    </form>
+    <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+    </div>
 </div>
-
-<script>
-    $("#formCreateSmartLink{{ ucfirst($routeCrud) }}").on('submit', function(e) {
-        e.preventDefault();
-
-        $(".btn-submit").attr('disabled', true).text('Enviando...');
-
-        var id = $("#id").val();
-
-        $.ajax({
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                type: 'POST',
-                url: '{{ $routeCrud }}/store-smart-link/' + id,
-                data: [],
-                processData: false,
-                contentType: false,
-            })
-            .done(function(data) {
-
-                if (data.status == 400) {
-                    Object.keys(data.errors).forEach((item) => {
-                        $("#" + item).addClass('is-invalid');
-                        toastMessage('fa fa-exclamation', 'bg-danger', 'Ops, houve um erro!', data
-                            .errors[item]);
-                    });
-
-                    $(".btn-submit").removeAttr('disabled', true).text('Confirmar');
-                } else if (data.status == 200) {
-                    $(".modal").modal('hide');
-
-                    $('#table').DataTable().draw(true);
-
-                    toastMessage('fa fa-check', 'bg-success', 'Sucesso!', data.message);
-                } else {
-                    toastMessage('fa fa-exclamation', 'bg-warning', 'Atenção!',
-                        'Tente novamente ou entre em contato com o administrador do sistema !');
-                }
-
-            })
-            .fail(function() {
-                console.log('fail');
-            })
-    });
-</script>

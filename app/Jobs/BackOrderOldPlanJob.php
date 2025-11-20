@@ -24,9 +24,7 @@ class BackOrderOldPlanJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private readonly Order $order)
-    {
-    }
+    public function __construct(private readonly Order $order) {}
 
     /*
      * Este job volta a assinatura para o plano anterior, caso o cliente não pague o upgrade
@@ -37,7 +35,7 @@ class BackOrderOldPlanJob implements ShouldQueue
             return; // Já foi revertido ou não é upgrade
         }
 
-        Log::info('BackOrderOldPlan acionado');
+        Log::channel('payment')->info('BackOrderOldPlan acionado');
         $oldOrder = OrderHistory::where('order_id', $this->order->id)
             ->orderByDesc('created_at')
             ->first();
@@ -71,14 +69,14 @@ class BackOrderOldPlanJob implements ShouldQueue
                 'updatePendingPayments' => true
             ];
 
-            Log::info('updateSubscriptionAfterProportionalPayJob acionado');
+            Log::channel('payment')->info('updateSubscriptionAfterProportionalPayJob acionado');
 
             $response = $gateway->subscription()->update($this->order->subscription_asaas_id, $data);
 
             if ($response['object'] === 'subscription') {
                 $customer = Customer::where('id', $oldOrder->data['customer_id'])->first();
                 if (!$customer) {
-                    Log::error('Customer não encontrado em BackOrderOldPlanJob');
+                    Log::channel('payment')->error('Customer não encontrado em BackOrderOldPlanJob');
                     return;
                 }
 

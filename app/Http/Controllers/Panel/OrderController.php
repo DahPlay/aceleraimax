@@ -46,7 +46,7 @@ class OrderController extends Controller
     public function loadDatatable(): JsonResponse
     {
         $orders = $this->model
-            ->with(['customer:id,name', 'plan:id,name'])
+            ->with(['customer:id,name,alloyal_id,user_id', 'customer.user:id,name', 'plan:id,name'])
             ->leftJoin('customers', 'customers.id', '=', 'orders.customer_id')
             ->leftJoin('coupons', 'coupons.id', '=', 'customers.coupon_id')
             ->select([
@@ -109,7 +109,24 @@ class OrderController extends Controller
             })
             ->editColumn('payment_status', function ($order) {
                 if ($order->value == 0) {
-                    return 'Free';
+                    return 'GRÁTIS';
+                }
+
+                $currentDate = Carbon::now()->startOfDay();
+                $nextDueFree = Carbon::parse($order->next_due_date)->startOfDay();
+
+                if ($nextDueFree > $currentDate) {
+                    return 'GRÁTIS';
+                }
+
+                $dataAtual = Carbon::now();
+
+                $fimDoMes = Carbon::now()->endOfMonth();
+
+                $isLessOrEqualOperator = $dataAtual <= $fimDoMes;
+
+                if ($isLessOrEqualOperator && $order->status == "ATIVO") {
+                    return "PAGO";
                 }
 
                 return PaymentStatusOrderAsaasEnum::tryFrom($order->payment_status)?->getName() ?? $order->payment_status;

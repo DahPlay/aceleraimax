@@ -16,9 +16,7 @@ class updateSubscriptionAfterProportionalPayJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private readonly Order $order)
-    {
-    }
+    public function __construct(private readonly Order $order) {}
 
     public function handle(): void
     {
@@ -34,7 +32,7 @@ class updateSubscriptionAfterProportionalPayJob implements ShouldQueue
             'externalReference' => 'Pedido: ' . $this->order->id,
         ];
 
-        Log::info('updateSubscriptionAfterProportionalPayJob acionado');
+        Log::channel('payment')->info('updateSubscriptionAfterProportionalPayJob acionado');
 
         $response = $gateway->subscription()->update($this->order->subscription_asaas_id, $data);
 

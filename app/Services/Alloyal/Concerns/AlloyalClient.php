@@ -2,7 +2,7 @@
 
 namespace App\Services\Alloyal\Concerns;
 
-Trait AlloyalClient
+trait AlloyalClient
 {
     public function __construct(
         protected ?string $base_url = null,

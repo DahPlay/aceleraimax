@@ -9,8 +9,9 @@
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
             <div class="image">
                 <img src="{{ file_exists(storage_path('app/public/' . auth()->user()->photo))
-    ? asset('storage/' . auth()->user()->photo)
-    : asset(auth()->user()->photo) }}" class="img-circle elevation-2" alt="User Image">
+                    ? asset('storage/' . auth()->user()->photo)
+                    : asset(auth()->user()->photo) }}"
+                    class="img-circle elevation-2" alt="User Image">
             </div>
             <div class="info">
                 <a href="#" class="d-block">{{ auth()->user()->name ?? 'Desconhecido' }}</a>
@@ -137,14 +138,16 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ config('custom.portal_link') }}" target="_blank" class="nav-link text-white" style="
+                    <a href="{{ config('custom.portal_link') }}" target="_blank" class="nav-link text-white"
+                        style="
                         background-color: {{ config('custom.background_home_color') }};
                         border-radius: 10px;
                         margin: 10px;
                         display: flex;
                         align-items: center;
                         transition: all 0.3s ease;
-                        padding: 10px;" onmouseover="this.style.boxShadow='0 0 20px rgba(255, 255, 255, 0.4)'"
+                        padding: 10px;"
+                        onmouseover="this.style.boxShadow='0 0 20px rgba(255, 255, 255, 0.4)'"
                         onmouseout="this.style.boxShadow='0 0 10px rgba(0, 0, 0, 0.2)'">
                         <img src="{{ config('custom.logo_2') }}" alt="Portal"
                             style="width: 45px; height: 45px; object-fit: contain; margin-right: 15px;">
@@ -155,7 +158,8 @@
                 </li>
                 @if (auth()->user()->access_id == 1)
                     <li class="nav-item">
-                        <a href="{{ auth()->user()->customer->web_smart_link }}" target="_blank" class="nav-link text-white"
+                        <a href="javascript:;" target="_blank" class="nav-link text-white btn-add-smart-link"
+                            data-id='{{ auth()->user()->id }}' data-url='/users/createSmartLink'
                             style="
                                 background-color: #fff;
                                 border-radius: 12px;
@@ -168,11 +172,12 @@
                                 align-items: center;
                                 padding: 10px;
                                 margin: 10px;
-                            " onmouseover="this.style.boxShadow='0 0 20px rgba(255, 255, 255, 0.4)'"
+                            "
+                            onmouseover="this.style.boxShadow='0 0 20px rgba(255, 255, 255, 0.4)'"
                             onmouseout="this.style.boxShadow='0 0 10px rgba(0, 0, 0, 0.2)'">
                             <img src="{{ asset('Auth-Panel/dist/img/logo-alloyal.svg') }}" alt="Alloyal"
                                 style="width: 45px; height: 45px; object-fit: contain; margin-right: 15px;">
-                            <p style="margin: 0; font-weight: bold; font-size: 16px;" class="text-body">Acessar a Alloyal
+                            <p style="margin: 0; font-weight: bold; font-size: 16px;" class="text-body">Acessar Alloyal
                             </p>
                         </a>
                     </li>
