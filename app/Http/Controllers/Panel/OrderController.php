@@ -112,10 +112,10 @@ class OrderController extends Controller
                     return 'GRÁTIS';
                 }
 
-                $currentDate = Carbon::now()->startOfDay();
-                $nextDueFree = Carbon::parse($order->next_due_date)->startOfDay();
+                $currentDate = Carbon::now();
+                $nextDueFree = Carbon::parse($order->next_due_date);
 
-                if ($nextDueFree > $currentDate) {
+                if (Carbon::now()->lt($nextDueFree)) {
                     return 'GRÁTIS';
                 }
 
