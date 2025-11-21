@@ -29,7 +29,7 @@ class UserCreate
             'name' => $data['name'] ?? '',
             'email' => $data['email'] ?? '',
             'cpf' => $cpf,
-            'phone' => $phone,
+            'cellphone' => $phone,
         ];
 
         if (isset($data['password'])) {
