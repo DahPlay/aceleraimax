@@ -69,7 +69,7 @@ class BackOrderOldPlanJob implements ShouldQueue
                 'updatePendingPayments' => true
             ];
 
-            Log::channel('payment')->info('updateSubscriptionAfterProportionalPayJob acionado');
+            Log::channel('payment')->info('UpdateSubscriptionAfterProportionalPayJob acionado');
 
             $response = $gateway->subscription()->update($this->order->subscription_asaas_id, $data);
 

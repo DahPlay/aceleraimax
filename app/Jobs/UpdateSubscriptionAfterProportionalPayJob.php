@@ -12,7 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class updateSubscriptionAfterProportionalPayJob implements ShouldQueue
+class UpdateSubscriptionAfterProportionalPayJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -32,7 +32,7 @@ class updateSubscriptionAfterProportionalPayJob implements ShouldQueue
             'externalReference' => 'Pedido: ' . $this->order->id,
         ];
 
-        Log::channel('payment')->info('updateSubscriptionAfterProportionalPayJob acionado');
+        Log::channel('payment')->info('UpdateSubscriptionAfterProportionalPayJob acionado');
 
         $response = $gateway->subscription()->update($this->order->subscription_asaas_id, $data);
 
