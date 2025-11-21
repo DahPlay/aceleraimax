@@ -104,6 +104,7 @@ class RegisterController extends Controller
                 },
                 'string',
                 'confirmed',
+                'min:6'
             ],
             'credit_card_number' => ['required', new \App\Rules\CreditCard()],
             'credit_card_expiry_month' => ['required', 'digits:2'],

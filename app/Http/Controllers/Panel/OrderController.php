@@ -118,16 +118,6 @@ class OrderController extends Controller
                     return 'GRÁTIS';
                 }
 
-                $dataAtual = Carbon::now();
-
-                $fimDoMes = Carbon::now()->endOfMonth();
-
-                $isLessOrEqualOperator = $dataAtual <= $fimDoMes;
-
-                if ($isLessOrEqualOperator && $order->status == "ATIVO") {
-                    return "PAGO";
-                }
-
                 return PaymentStatusOrderAsaasEnum::tryFrom($order->payment_status)?->getName() ?? $order->payment_status;
             })
             ->editColumn('payment_asaas_id', function ($item) {

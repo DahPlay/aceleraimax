@@ -457,19 +457,19 @@
                                 value="{{ old('credit_card_ccv', session('customerData')['credit_card_ccv'] ?? '') }}">
                         </div>
 
+                        <div class="d-flex flex-row input-group mb-2 mt-4">
+                            <input type="checkbox" name="terms" id="terms" placeholder="000" minlength="3"
+                                maxlength="4" required="" value="">
+                            <span class="text-white ml-2">Aceitar termos e condições</span>
+                            <a href="#" class="ml-2">visualizar termo.</a>
+                        </div>
+
                         <div class="navigation-buttons">
                             <button type="button" class="btn btn-nav btn-back" data-prev="3"
                                 style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Voltar</button>
                             <button type="submit" class="btn btn-nav btn-submit"
                                 style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Finalizar
                                 Cadastro</button>
-                        </div>
-
-                        <div class="d-flex flex-row input-group mb-2 mt-4">
-                            <input type="checkbox" name="terms" id="terms" placeholder="000" minlength="3"
-                                maxlength="4" required="" value="">
-                            <span class="text-white ml-2">Aceitar termos e condições</span>
-                            <a href="#" class="ml-2">visualizar termo.</a>
                         </div>
                     </div>
 

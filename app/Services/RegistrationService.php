@@ -10,6 +10,7 @@ use App\Models\Coupon;
 use App\Models\Package;
 use App\Models\UserConsent;
 use App\Services\Alloyal\User\UserCreate;
+use App\Services\Alloyal\User\UserDisable;
 use App\Services\PaymentGateway\Connectors\AsaasConnector;
 use App\Services\PaymentGateway\Gateway;
 use App\Services\YouCast\Customer\CustomerCreate;
@@ -89,7 +90,13 @@ class RegistrationService
                 'password' => $data['password'],
             ];
 
-            $alloyalResponse = $this->createUserAlloyal($alloyalPayload, $customer);
+            $this->createUserAlloyal($alloyalPayload, $customer);
+
+            Log::channel('registration')->info('Criando usuário na Alloyal');
+
+            (new UserDisable())->handle($customer->document);
+
+            Log::channel('registration')->info('Usuário inativado com sucesso no Alloyal');
 
             if ($asaasCustomerId) {
                 $customer->update([

@@ -9,6 +9,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Package;
 use App\Services\Alloyal\User\UserDisable;
+use App\Services\Alloyal\User\UserEnable;
 use App\Services\AppIntegration\PlanCancelService;
 use App\Services\AppIntegration\PlanCreateService;
 use App\Services\YouCast\Plan\PlanHistory;
@@ -40,6 +41,7 @@ class AsaasPaymentService
                 if ($order->changed_plan /*|| $order->value != $plan->value*/) {
                     updateSubscriptionAfterProportionalPayJob::dispatch($order);
                 }
+
                 $order->update([
                     'status' => StatusOrderAsaasEnum::ACTIVE,
                     'payment_asaas_id' => $paymentId,
@@ -85,6 +87,11 @@ class AsaasPaymentService
                         }
                     }
                 };
+
+                (new UserEnable())->handle($order->customer->document);
+
+                Log::channel('payment')->info('Usuário ativado com sucesso no Alloyal');
+
                 break;
 
             case 'PAYMENT_CREATED':
@@ -119,7 +126,7 @@ class AsaasPaymentService
 
                 $cpf = $order->customer?->document ?? '';
 
-                $alloyalResponse = (new UserDisable())->handle($cpf);
+                (new UserDisable())->handle($cpf);
 
                 Log::channel('payment')->info('Usuário inativado com sucesso no Alloyal');
 
