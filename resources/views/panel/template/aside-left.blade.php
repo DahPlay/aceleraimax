@@ -156,7 +156,8 @@
                         </p>
                     </a>
                 </li>
-                @if (auth()->user()->access_id == 1)
+
+                @if (auth()->user()->access_id == 1 && auth()->user()->customer?->isAlloyalActive())
                     <li class="nav-item">
                         <a href="javascript:;" target="_blank" class="nav-link text-white btn-add-smart-link"
                             data-id='{{ auth()->user()->id }}' data-url='/users/createSmartLink'

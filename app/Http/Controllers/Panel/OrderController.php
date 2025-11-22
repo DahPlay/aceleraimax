@@ -164,12 +164,7 @@ class OrderController extends Controller
             ->addColumn('action', function ($order) {
                 $loggedId = auth()->user()->id;
 
-                $alloyalActive = null;
-                if ($order?->customer?->document) {
-                    $alloyalActive = (new UserDetails())->handle($order?->customer?->document);
-                }
-
-                return view('panel.orders.local.index.datatable.action', compact('order', 'loggedId', 'alloyalActive'));
+                return view('panel.orders.local.index.datatable.action', compact('order', 'loggedId'));
             })
             ->toJson();
     }

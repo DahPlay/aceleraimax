@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Alloyal\User\UserDetails;
 use App\Traits\BelongsUserScope;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -55,5 +56,16 @@ class Customer extends Model
     public function creditCards(): HasMany
     {
         return $this->hasMany(CustomerCreditCard::class);
+    }
+
+    public function isAlloyalActive(): bool
+    {
+        if (! $this->document || ! filled($this->alloyal_id)) {
+            return false;
+        }
+
+        $result = (new UserDetails())->handle($this->document);
+
+        return $result['active'] ?? false;
     }
 }
