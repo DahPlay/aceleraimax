@@ -71,7 +71,12 @@ class UserController extends Controller
             ->addColumn('action', function ($user) {
                 $loggedId = auth()->user()->id;
 
-                return view('panel.users.local.index.datatable.action', compact('user', 'loggedId'));
+                $alloyalActive = null;
+                if($user?->customer?->document){
+                    $alloyalActive = (new UserDetails())->handle($user?->customer?->document);
+                }
+
+                return view('panel.users.local.index.datatable.action', compact('user', 'loggedId', 'alloyalActive'));
             })
             ->make();
     }

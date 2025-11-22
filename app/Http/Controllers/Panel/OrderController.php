@@ -12,6 +12,7 @@ use App\Models\CustomerCreditCard;
 use App\Models\Order;
 use App\Models\Package;
 use App\Models\Plan;
+use App\Services\Alloyal\User\UserDetails;
 use App\Services\AppIntegration\PlanCancelService;
 use App\Services\AppIntegration\PlanCreateService;
 use App\Services\PaymentGateway\Connectors\AsaasConnector;
@@ -46,7 +47,7 @@ class OrderController extends Controller
     public function loadDatatable(): JsonResponse
     {
         $orders = $this->model
-            ->with(['customer:id,name,alloyal_id,user_id', 'customer.user:id,name', 'plan:id,name'])
+            ->with(['customer:id,name,alloyal_id,user_id,document', 'customer.user:id,name', 'plan:id,name'])
             ->leftJoin('customers', 'customers.id', '=', 'orders.customer_id')
             ->leftJoin('coupons', 'coupons.id', '=', 'customers.coupon_id')
             ->select([
@@ -163,7 +164,12 @@ class OrderController extends Controller
             ->addColumn('action', function ($order) {
                 $loggedId = auth()->user()->id;
 
-                return view('panel.orders.local.index.datatable.action', compact('order', 'loggedId'));
+                $alloyalActive = null;
+                if ($order?->customer?->document) {
+                    $alloyalActive = (new UserDetails())->handle($order?->customer?->document);
+                }
+
+                return view('panel.orders.local.index.datatable.action', compact('order', 'loggedId', 'alloyalActive'));
             })
             ->toJson();
     }

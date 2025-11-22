@@ -50,7 +50,7 @@
 
         <div class="dropdown-divider"></div>
 
-        @if (filled($order->customer?->alloyal_id))
+        @if (filled($order->customer?->alloyal_id) && !is_null($alloyalActive) && $alloyalActive['active'])
             <a href='javascript:;' class='btn-add-smart-link btn btn-info dropdown-item'
                 data-id='{{ $order->customer->user->id }}' data-url='/users/createSmartLink'>
                 <img src="{{ asset('Auth-Panel/dist/img/logo-alloyal.svg') }}" alt="Alloyal"
