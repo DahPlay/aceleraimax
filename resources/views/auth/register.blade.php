@@ -504,7 +504,7 @@
                     <a href="{{ config('custom.link_social_media_1') }}"><img
                             src="{{ config('custom.image_social_media_1') }}" alt=""></a>
                 </div>
-                <div class="container-social-media"
+                <!-- <div class="container-social-media"
                     style="background-color: {{ config('custom.background_social_media') }};">
                     <a href="{{ config('custom.link_social_media_2') }}"><img
                             src="{{ config('custom.image_social_media_2') }}" alt=""></a>
@@ -513,7 +513,7 @@
                     style="background-color: {{ config('custom.background_social_media') }};">
                     <a href="{{ config('custom.link_social_media_3') }}"><img
                             src="{{ config('custom.image_social_media_3') }}" alt=""></a>
-                </div>
+                </div> -->
             </div>
             <img class="logo-footer" src="{{ config('custom.logo_baseboard') }}" alt="">
         </div>
