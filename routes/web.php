@@ -10,6 +10,7 @@ use App\Http\Controllers\Panel\PackagesController;
 use App\Http\Controllers\Panel\PlanController;
 use App\Http\Controllers\Panel\UserController;
 use App\Http\Controllers\Site\MainController as SiteMain;
+use App\Http\Controllers\Site\SmartLinkRedirectController;
 use App\Http\Controllers\System\MainController as SystemMain;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,10 @@ use App\Models\Order;
 
 
 Auth::routes(['register' => false]);
+
+Route::get('/{customerId}', [SmartLinkRedirectController::class, 'redirectToSmartLink'])
+    ->where('customerId', '[0-9]+')
+    ->name('smart-link.redirect');
 
 Route::get('/register/{planId?}', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);

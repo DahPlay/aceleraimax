@@ -9,7 +9,7 @@ class CustomerAuthenticate
 {
     use YouCastClient;
 
-    public function handle(string $login, string $password): bool
+    public function handle(string $login, string $password): array
     {
         $data = [
             'data' => [
@@ -25,9 +25,9 @@ class CustomerAuthenticate
                 'authorization' => $this->token,
             ])->post("{$this->url}/api/devices/motv/apiLoginV2", $data);
 
-            return isset($response['status']) && $response['status'] == 1;
+            return $response->json()['response'];
         } catch (\Exception $e) {
-            return false;
+            return [];
         }
     }
 }
