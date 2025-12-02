@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{config('custom.project_name')}}</title>
+    <title>{{ config('custom.project_name') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -22,14 +22,18 @@
 
 <body>
 
-    @if (config('custom.simple_home') == "NAO")
+    @if (session('error'))
+        <div class="alert alert-danger text-center">{{ session('error') }}</div>
+    @endif
 
+    @if (config('custom.simple_home') == 'NAO')
         <header class="d-flex justify-content-center justify-content-lg-end position-relative"
             style="background-image: url('{{ config('custom.background_home_image') }}'); background-repeat: no-repeat;">
 
             <!-- Escurece a imagem, mas fica por baixo de tudo -->
 
-            <div style="
+            <div
+                style="
                                                 background-color: {{ config('custom.background_home_image_blur') }};
                                                 position: absolute;
                                                 top: 0;
@@ -37,7 +41,8 @@
                                                 width: 100%;
                                                 height: 100%;
                                                 z-index: 0;
-                                            "></div>
+                                            ">
+            </div>
 
             <!-- Tudo que vem depois, com z-index: 1, fica acima -->
             <div style="z-index: 1;">
@@ -57,31 +62,37 @@
                     class="justify-content-end justify-content-lg-center ml-0 mr-0 navbar navbar-expand col nav d-none d-lg-flex">
 
                     <ul class="d-lg-flex d-none justify-content-lg-center navbar-nav">
-                        <li class="px-4" style="background-color: {{ config('custom.background_home_menu_color') }};"><a
+                        <li class="px-4"
+                            style="background-color: {{ config('custom.background_home_menu_color') }};"><a
                                 href="#planos"
                                 style="color: {{ config('custom.text_home_menu_color') }};">{{ config('custom.text_menu_1') }}</a>
                         </li>
 
-                        <li class="px-4" style="background-color: {{ config('custom.background_home_menu_color') }};"><a
+                        <li class="px-4"
+                            style="background-color: {{ config('custom.background_home_menu_color') }};"><a
                                 href="#sobre-a-plataforma"
                                 style="color: {{ config('custom.text_home_menu_color') }};">{{ config('custom.text_menu_2') }}</a>
                         </li>
-                        <li class="px-4" style="background-color: {{ config('custom.background_home_menu_color') }};"><a
+                        <li class="px-4"
+                            style="background-color: {{ config('custom.background_home_menu_color') }};"><a
                                 href="#catalogo"
                                 style="color: {{ config('custom.text_home_menu_color') }};">{{ config('custom.text_menu_3') }}</a>
                         </li>
-                        <li class="px-4" style="background-color: {{ config('custom.background_home_menu_color') }};"><a
+                        <li class="px-4"
+                            style="background-color: {{ config('custom.background_home_menu_color') }};"><a
                                 href="{{ route('login') }}"
                                 style="color: {{ config('custom.text_home_menu_color') }};">{{ config('custom.text_menu_4') }}</a>
                         </li>
                         <li class="active px-4"
-                            style="background-color: {{ config('custom.background_button_home_menu_color_cadastre') }};"><a
-                                href="#planos">{{ config('custom.text_menu_5') }}</a></li>
+                            style="background-color: {{ config('custom.background_button_home_menu_color_cadastre') }};">
+                            <a href="#planos">{{ config('custom.text_menu_5') }}</a></li>
                         <li class="active px-4 d-flex align-items-center"
                             style="background-color: {{ config('custom.background_home_menu_color') }}; border-radius: 10px;">
-                            <a href="{{ config('custom.portal_link') }}" target="_blank" class="d-flex align-items-center"
+                            <a href="{{ config('custom.portal_link') }}" target="_blank"
+                                class="d-flex align-items-center"
                                 style="color: {{ config('custom.text_home_menu_color') }}; font-weight: bold;">
-                                Acessar <img src="{{ config('custom.logo_1') }}" style="width: {{ config('custom.text_menu_6_logo_home_width') }}px; margin-right: 8px;"
+                                Acessar <img src="{{ config('custom.logo_1') }}"
+                                    style="width: {{ config('custom.text_menu_6_logo_home_width') }}px; margin-right: 8px;"
                                     alt="Logo">
 
                             </a>
@@ -109,7 +120,8 @@
                     <li><a href="#planos"
                             style="color: {{ config('custom.text_home_menu_color') }};">{{ config('custom.text_menu_5') }}</a>
                     </li>
-                    <li class="active px-4" style="background-color: {{ config('custom.background_home_menu_color') }};">
+                    <li class="active px-4"
+                        style="background-color: {{ config('custom.background_home_menu_color') }};">
                         <a href="{{ config('custom.portal_link') }}" target="_blank"
                             style="color: {{ config('custom.text_button_home_menu_color_cadastre') }};">
                             <img src="{{ config('custom.logo_1') }}" style="width: 140px; margin: 0px;" alt="">
@@ -124,7 +136,8 @@
                 <span
                     style="color: {{ config('custom.title_home_color_capa') }};">{{ config('custom.titulo_home_capa') }}</span>
 
-                <p style="color: {{ config('custom.text_home_color_capa') }};">{{ config('custom.text_home_capa') }}</p>
+                <p style="color: {{ config('custom.text_home_color_capa') }};">{{ config('custom.text_home_capa') }}
+                </p>
 
                 <a href="#planos"
                     style="background-color: {{ config('custom.background_button_home_menu_color_cadastre') }}; color: {{ config('custom.text_button_home_menu_color_cadastre') }};">{{ config('custom.text_button_home_menu_experimente') }}</a>
@@ -135,14 +148,16 @@
 
 
 
-        <section id="sobre-a-plataforma" class="d-flex first-section flex-column flex-lg-row section-container text-center">
+        <section id="sobre-a-plataforma"
+            class="d-flex first-section flex-column flex-lg-row section-container text-center">
             <div>
                 <h3 style="color: {{ config('custom.text_home') }};">{{ config('custom.titulo_video') }}</h3>
                 <p style="color: {{ config('custom.text_home') }};">{{ config('custom.text_video') }}</p>
             </div>
 
             <div class="first-section-video">
-                <iframe height="315" src="{{ config('custom.link_video') }}" title="YouTube video player" frameborder="0"
+                <iframe height="315" src="{{ config('custom.link_video') }}" title="YouTube video player"
+                    frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
@@ -244,27 +259,27 @@
             <div class="swiper moviesSwiper">
                 <div class="swiper-wrapper movies-area">
                     <div class="swiper-slide d-flex justify-content-center align-items-center">
-                        <img class="channel-photo" style="height: {{config('custom.height_channel')}};"
+                        <img class="channel-photo" style="height: {{ config('custom.height_channel') }};"
                             src="{{ config('custom.image_movie_1') }}" alt="">
                     </div>
 
                     <div class="swiper-slide d-flex justify-content-center align-items-center">
-                        <img class="channel-photo" style="height: {{config('custom.height_channel')}};"
+                        <img class="channel-photo" style="height: {{ config('custom.height_channel') }};"
                             src="{{ config('custom.image_movie_2') }}" alt="">
                     </div>
 
                     <div class="swiper-slide d-flex justify-content-center align-items-center">
-                        <img class="channel-photo" style="height: {{config('custom.height_channel')}};"
+                        <img class="channel-photo" style="height: {{ config('custom.height_channel') }};"
                             src="{{ config('custom.image_movie_3') }}" alt="">
                     </div>
 
                     <div class="swiper-slide d-flex justify-content-center align-items-center">
-                        <img class="channel-photo" style="height: {{config('custom.height_channel')}};"
+                        <img class="channel-photo" style="height: {{ config('custom.height_channel') }};"
                             src="{{ config('custom.image_movie_4') }}" alt="">
                     </div>
 
                     <div class="swiper-slide d-flex justify-content-center align-items-center">
-                        <img class="channel-photo" style="height: {{config('custom.height_channel')}};"
+                        <img class="channel-photo" style="height: {{ config('custom.height_channel') }};"
                             src="{{ config('custom.image_movie_5') }}" alt="">
                     </div>
                 </div>
@@ -275,35 +290,39 @@
         </section>
 
         <section class="fifth-section section-container position-relative"
-            style="background-color: {{config('custom.background_people')}};">
+            style="background-color: {{ config('custom.background_people') }};">
             <div class="container-woman col-6">
                 <img src="{{ config('custom.image_people') }}" alt="">
             </div>
 
             <div class="container-infos col-6">
-                <h3 style="color: {{ config('custom.text_home_menu_color') }};">{{ config('custom.title_people') }}</h3>
-                <p style="color: {{ config('custom.text_home_menu_color') }};">{{ config('custom.text_people') }}</p>
+                <h3 style="color: {{ config('custom.text_home_menu_color') }};">{{ config('custom.title_people') }}
+                </h3>
+                <p style="color: {{ config('custom.text_home_menu_color') }};">{{ config('custom.text_people') }}
+                </p>
             </div>
         </section> <!-- OCULTAR -->
     @else
         <div class="banner-container">
-            <img src="{{ config('custom.home_simple_image') }}" alt="Imagem de fundo"
-                class="banner-background">
+            <img src="{{ config('custom.home_simple_image') }}" alt="Imagem de fundo" class="banner-background">
 
-            <div class="banner-overlay 
+            <div
+                class="banner-overlay
             {{ config('custom.banner_overlay') === 'CLARO' ? 'banner-overlay-white' : 'banner-overlay-black' }}">
             </div>
 
             <!-- Botões no canto superior direito -->
             <div class="banner-button-top-right">
-                <a href="{{ route('login') }}" target="_blank" rel="noopener noreferrer" class="banner-login-button">
+                <a href="{{ route('login') }}" target="_blank" rel="noopener noreferrer"
+                    class="banner-login-button">
                     {{ config('custom.text_menu_4') }}
                 </a>
 
                 <a href="{{ config('custom.portal_link') }}" target="_blank" rel="noopener noreferrer"
                     class="banner-access-link d-flex align-items-center">
                     <span style="margin-right: 8px;">Acessar</span>
-                    <img src="{{ config('custom.logo_1') }}" style="width: {{ config('custom.text_menu_6_logo_home_width') }}px;" alt="Logo">
+                    <img src="{{ config('custom.logo_1') }}"
+                        style="width: {{ config('custom.text_menu_6_logo_home_width') }}px;" alt="Logo">
                 </a>
             </div>
 
@@ -402,11 +421,9 @@
             .banner-access-link {
                 padding: 10px 20px;
                 background-color:
-                    {{ config('custom.background_home_menu_color') }}
-                ;
+                    {{ config('custom.background_home_menu_color') }};
                 color:
-                    {{ config('custom.text_home_menu_color') }}
-                ;
+                    {{ config('custom.text_home_menu_color') }};
                 border: none;
                 border-radius: 8px;
                 text-decoration: none;
@@ -445,9 +462,6 @@
                 }
             }
         </style>
-
-
-
     @endif
     </br></br></br>
     @include('site.partials.plan-section')
@@ -490,7 +504,7 @@
 
     <script src="{{ asset('Auth-Panel/dist/js/front/front.js') }}"></script>
     <script>
-        $(function () {
+        $(function() {
             const swiper = new Swiper('.mySwiper', {
                 slidesPerView: 4,
                 slidesPerGroup: 1,
@@ -542,7 +556,7 @@
             });
 
 
-            $('a[href^="#"]').on('click', function (event) {
+            $('a[href^="#"]').on('click', function(event) {
                 event.preventDefault();
 
                 const target = $(this.getAttribute('href'));
@@ -555,8 +569,8 @@
             });
         });
 
-        document.addEventListener('DOMContentLoaded', function () {
-            @foreach($cycles as $cycleKey => $cycleName)
+        document.addEventListener('DOMContentLoaded', function() {
+            @foreach ($cycles as $cycleKey => $cycleName)
                 new Swiper('.mySwiper-{{ $cycleKey }}', {
                     slidesPerView: 1,
                     spaceBetween: 20,
@@ -582,15 +596,15 @@
                     }
                 });
             @endforeach
-    });
+        });
 
-        $(document).ready(function () {
+        $(document).ready(function() {
             // Espera um pequeno tempo para garantir que todos os elementos estejam no DOM (ajuste se necessário)
-            setTimeout(function () {
+            setTimeout(function() {
                 let maxHeight = 0;
 
                 // Seleciona todos os cards
-                $('.swiper-slide').each(function () {
+                $('.swiper-slide').each(function() {
                     let cardHeight = $(this).height();
                     if (cardHeight > maxHeight) {
                         maxHeight = cardHeight;
@@ -612,9 +626,7 @@
     /* For Swiper buttons if they use ::after (commonly the case) */
     .swiper-button-next::after,
     .swiper-button-prev::after {
-        color: {{ config('custom.text_home') }}
-
-        !important;
+        color: {{ config('custom.text_home') }} !important;
         font-size: 40px;
         /* ajuste opcional */
     }

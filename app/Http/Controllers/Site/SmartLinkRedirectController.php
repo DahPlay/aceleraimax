@@ -42,8 +42,9 @@ class SmartLinkRedirectController extends Controller
                     'customer_id' => $customerId,
                 ]);
 
-                $url = config('app.url') ?: 'https://portal.aceleraimax.com';
-                return redirect()->away($url)->withErrors('Acesso não autorizado.');
+                session()->flash('error', 'Acesso não autorizado.');
+
+                return redirect()->to(env('APP_URL'));
             } else {
                 Log::info('Smart Link access autorizado', [
                     'source' => $isFromApp ? 'app' : 'portal',
@@ -60,12 +61,14 @@ class SmartLinkRedirectController extends Controller
             $customerData = $mwAdminConnector->Customer()->getData($customerId);
 
             if (empty($customerData) || !isset($customerData->customers_login)) {
-                Log::warning('MW customer not found or missing viewers_id', [
+                Log::warning('Cliente MW não encontrado ou desaparecido viewers_id', [
                     'mw_customer_id' => $customerId,
                     'response' => $customerData,
                 ]);
 
-                return redirect()->away(env('APP_URL'))->withErrors('Cliente não encontrado.');
+                session()->flash('error', 'Cliente não encontrado.');
+
+                return redirect()->to(env('APP_URL'));
             }
 
             $login = $customerData->customers_login;
@@ -73,12 +76,14 @@ class SmartLinkRedirectController extends Controller
             $customer = Customer::where('login', $login)->first();
 
             if (!$customer) {
-                Log::warning('Local customer not found for viewers_id', [
+                Log::warning('Cliente local não encontrado para viewers_id', [
                     'login' => $login,
                     'mw_customer_id' => $customerId,
                 ]);
 
-                return redirect()->away(env('APP_URL'))->withErrors('Conta não vinculada.');
+                session()->flash('error', 'Conta não vinculada.');
+
+                return redirect()->to(env('APP_URL'));
             }
 
             $this->attemptCreateSmartLink($customer->user_id);
@@ -92,7 +97,10 @@ class SmartLinkRedirectController extends Controller
                     'mw_customer_id' => $customerId,
                     'login' => $login,
                 ]);
-                return redirect()->away(env('APP_URL'))->withErrors('Não foi possível gerar o link de acesso.');
+
+                session()->flash('error', 'Não foi possível gerar o link de acesso.');
+
+                return redirect()->to(env('APP_URL'));
             }
 
             return redirect()->away($smartLink);
