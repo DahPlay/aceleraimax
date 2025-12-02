@@ -24,7 +24,7 @@ class SmartLinkRedirectController extends Controller
             $referer = $request->header('Referer');
             $userAgent = $request->userAgent() ?? '';
 
-            $isFromPortal = $referer && str_starts_with(trim($referer), 'https://portal.aceleraimax.com');
+            $isFromPortal = $referer && str_starts_with(trim($referer), 'https://portal.aceleraimax.com/');
 
             $isFromApp =
                 $referer === null
@@ -42,7 +42,7 @@ class SmartLinkRedirectController extends Controller
                     'customer_id' => $customerId,
                 ]);
 
-                $url = config('app.url') ?: 'https://aceleraimax.com';
+                $url = config('app.url') ?: 'https://portal.aceleraimax.com';
                 return redirect()->away($url)->withErrors('Acesso não autorizado.');
             } else {
                 Log::info('Smart Link access autorizado', [

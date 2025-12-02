@@ -46,6 +46,6 @@ Artisan::command('play', function () {
     );
 
     // Obter dados de um cliente (pelo customers_id do MW, **não** viewers_id do CSMS)
-    $customer = $mwAdminConnector->Customer()->getData(121028);
+    $customer = $mwAdminConnector->Customer()->getData(121016);
     dd($customer);
 });
