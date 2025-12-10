@@ -4,7 +4,6 @@
 /public/hot
 /public/storage
 /storage/*.key
-storage/logs/*.log
 /vendor
 .env
 .env.backup
@@ -19,3 +18,4 @@ yarn-error.log
 /.vscode
 laradumps.yaml
 composer.phar
+/storage/logs/*
