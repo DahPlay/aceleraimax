@@ -26,7 +26,7 @@
 
         <div class="card col p-0">
             <div class="card-body d-flex flex-column login-card-body p-0">
-                <div class="card mb-5">
+                <div class="card mb-4">
                     <div class="card-body text-center">
                         @php
                             $baseUrl = config('app.url');
@@ -35,12 +35,6 @@
                             }
                         @endphp
 
-                        <div class="social-auth-links text-center mb-3">
-                            <p style="color: {{ config('custom.text_color_conta') }};">
-                                Voltar para
-                                <a href="{{ $baseUrl }}" style="color: {{ config('custom.text_color_cadastre') }};">Home</a>
-                            </p>
-                        </div>
                         <div class="d-flex justify-content-center">
                             <p style=" color: {{ config('custom.text_color_acessar') }};">Acessar
                                 {{config('custom.project_name')}}
@@ -48,11 +42,6 @@
                             <i class="fa fa-arrow-down ml-2 animate__animated animate__bounce"
                                 style=" color: {{ config('custom.text_color_acessar') }};"></i>
                         </div>
-
-                        <a href="{{ config('custom.portal_link') }}" target="_blank">
-                            <img src="{{ config('custom.logo_1') }}" style="width: 140px;"
-                                alt="{{config('custom.project_name')}}">
-                        </a>
                     </div>
                 </div>
 
@@ -113,12 +102,6 @@
                 </form>
             </div>
         </div>
-        <div class="login-logo position-absolute">
-            <a href="{{ route('login') }}">
-                <img src="{{ config('custom.logo_2') }}" alt="">
-            </a>
-        </div>
-
     </div>
 
 @endsection

@@ -132,7 +132,7 @@
 
                 // Aqui você pode, por exemplo, mostrar o link para o boleto:
                 echo "<a href='$boletoUrl' target='_blank'>Abrir Fatura</a>";
-            } 
+            }
         @endphp -->
 
         <!-- <form method="GET">
