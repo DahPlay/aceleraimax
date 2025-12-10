@@ -1,0 +1,22 @@
+[2025-12-10 12:30:47] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"19933026038"} 
+[2025-12-10 12:30:47] local.ERROR: Falha na consulta ao Alloyal {"cpf":"19933026038","exception":"cURL error 6: Could not resolve host: api-hml.lecupon.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-hml.lecupon.com/client/v2/businesses/2415/users/19933026038"} 
+[2025-12-10 12:31:08] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"19933026038"} 
+[2025-12-10 12:31:08] local.ERROR: Falha na consulta ao Alloyal {"cpf":"19933026038","exception":"cURL error 6: Could not resolve host: api-hml.lecupon.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-hml.lecupon.com/client/v2/businesses/2415/users/19933026038"} 
+[2025-12-10 12:31:23] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"19933026038"} 
+[2025-12-10 12:31:23] local.ERROR: Falha na consulta ao Alloyal {"cpf":"19933026038","exception":"cURL error 6: Could not resolve host: api-hml.lecupon.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-hml.lecupon.com/client/v2/businesses/2415/users/19933026038"} 
+[2025-12-10 12:31:48] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"19933026038"} 
+[2025-12-10 12:31:49] local.INFO: Usuário encontrado no Alloyal {"cpf":"19933026038","alloyal_id":5344002,"response_time_ms":647.06} 
+[2025-12-10 12:31:49] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"38226178061"} 
+[2025-12-10 12:31:49] local.INFO: Usuário encontrado no Alloyal {"cpf":"38226178061","alloyal_id":5342919,"response_time_ms":286.67} 
+[2025-12-10 12:31:49] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"70312794029"} 
+[2025-12-10 12:31:50] local.INFO: Usuário encontrado no Alloyal {"cpf":"70312794029","alloyal_id":5342482,"response_time_ms":271.66} 
+[2025-12-10 12:31:50] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"61232284041"} 
+[2025-12-10 12:31:50] local.DEBUG: Usuário NÃO encontrado no Alloyal {"cpf":"61232284041","response_time_ms":340.89} 
+[2025-12-10 12:31:50] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"21407002015"} 
+[2025-12-10 12:31:50] local.DEBUG: Usuário NÃO encontrado no Alloyal {"cpf":"21407002015","response_time_ms":309.33} 
+[2025-12-10 12:31:50] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"31483548007"} 
+[2025-12-10 12:31:50] local.DEBUG: Usuário NÃO encontrado no Alloyal {"cpf":"31483548007","response_time_ms":167.18} 
+[2025-12-10 12:31:50] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"13350712029"} 
+[2025-12-10 12:31:51] local.INFO: Usuário encontrado no Alloyal {"cpf":"13350712029","alloyal_id":5338994,"response_time_ms":189.41} 
+[2025-12-10 12:31:51] local.DEBUG: Buscando usuário no Alloyal por CPF {"cpf":"69337037033"} 
+[2025-12-10 12:31:51] local.INFO: Usuário encontrado no Alloyal {"cpf":"69337037033","alloyal_id":5313822,"response_time_ms":182.6} 
