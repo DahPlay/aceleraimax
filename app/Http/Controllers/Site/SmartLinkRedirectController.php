@@ -42,9 +42,9 @@ class SmartLinkRedirectController extends Controller
                     'customer_id' => $customerId,
                 ]);
 
-                session()->flash('error', 'Acesso não autorizado.');
+                session()->flash('error', 'Não foi possível acessar o clube de benefício, por favor falar com o suporte.');
 
-                return redirect()->to(env('APP_URL'));
+                return redirect()->to(env('APP_URL') . '/login');
             } else {
                 Log::info('Smart Link access autorizado', [
                     'source' => $isFromApp ? 'app' : 'portal',
@@ -66,9 +66,9 @@ class SmartLinkRedirectController extends Controller
                     'response' => $customerData,
                 ]);
 
-                session()->flash('error', 'Cliente não encontrado.');
+                session()->flash('error', 'Não foi possível acessar o clube de benefício, por favor falar com o suporte.');
 
-                return redirect()->to(env('APP_URL'));
+                return redirect()->to(env('APP_URL') . '/login');
             }
 
             $login = $customerData->customers_login;
@@ -81,9 +81,9 @@ class SmartLinkRedirectController extends Controller
                     'mw_customer_id' => $customerId,
                 ]);
 
-                session()->flash('error', 'Conta não vinculada.');
+                session()->flash('error', 'Não foi possível acessar o clube de benefício, por favor falar com o suporte.');
 
-                return redirect()->to(env('APP_URL'));
+                return redirect()->to(env('APP_URL') . '/login');
             }
 
             $this->attemptCreateSmartLink($customer->user_id);
@@ -98,9 +98,9 @@ class SmartLinkRedirectController extends Controller
                     'login' => $login,
                 ]);
 
-                session()->flash('error', 'Não foi possível gerar o link de acesso.');
+                session()->flash('error', 'Não foi possível acessar o clube de benefício, por favor falar com o suporte.');
 
-                return redirect()->to(env('APP_URL'));
+                return redirect()->to(env('APP_URL') . '/login');
             }
 
             return redirect()->away($smartLink);
@@ -111,7 +111,7 @@ class SmartLinkRedirectController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return redirect()->away(env('APP_URL'))->withErrors('Erro interno. Tente novamente.');
+            return redirect()->away(env('APP_URL') . '/login')->withErrors('Não foi possível acessar o clube de benefício, por favor falar com o suporte.');
         }
     }
 
