@@ -72,7 +72,7 @@ class CustomerService
         return $this->customerUpdate->handle($customer, $password);
     }
 
-    public function authenticateExternalCustomer(string $login, string $password = null): bool
+    public function authenticateExternalCustomer(string $login, string $password = null): array
     {
         $response = $this->customerAuthenticate->handle($login, $password);
 

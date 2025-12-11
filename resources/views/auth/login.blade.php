@@ -1,26 +1,35 @@
 @extends('auth.template.index')
 
 @section('content')
-
-
     <div class="background-login col-6 d-none d-md-flex"
         style="background-image: url('/Auth-Panel/dist/img/{{ config('custom.background_login_image') }}')"></div>
     <div class="login-box login-page col-12 col-md-6 p-0"
         style="background-color: {{ config('custom.background_login_color') }};">
 
 
-        @if (count($errors) > 0)
+        @if ($errors->any())
             <script>
-                $(document).Toasts('create', {
-                    class: 'bg-danger',
-                    title: 'Atenção ao(s) seguinte(s) erro(s):',
-                    position: 'topRight',
-                    body: [
-                        @foreach ($errors->all() as $error)
-                            "<li>{{ $error }}</li>",
-                        @endforeach
-                                                                                                                                                                                                                ]
-                })
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Atenção aos seguintes erro(s):',
+                        html: `
+                        <ul class="text-left" style="margin: 0; padding-left: 20px;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        `,
+                        confirmButtonText: 'Ok',
+                        customClass: {
+                            popup: 'swal-wide',
+                            title: 'swal-title-bold'
+                        },
+                        didOpen: () => {
+                            Swal.getConfirmButton().focus();
+                        }
+                    });
+                });
             </script>
         @endif
 
@@ -37,7 +46,7 @@
 
                         <div class="d-flex justify-content-center">
                             <p style=" color: {{ config('custom.text_color_acessar') }};">Acessar
-                                {{config('custom.project_name')}}
+                                {{ config('custom.project_name') }}
                             </p>
                             <i class="fa fa-arrow-down ml-2 animate__animated animate__bounce"
                                 style=" color: {{ config('custom.text_color_acessar') }};"></i>
@@ -103,5 +112,4 @@
             </div>
         </div>
     </div>
-
 @endsection

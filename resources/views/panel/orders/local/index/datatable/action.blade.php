@@ -50,13 +50,15 @@
 
         <div class="dropdown-divider"></div>
 
-        @if (filled($order->customer?->alloyal_id) && $order->customer?->isAlloyalActive())
-            <a href='javascript:;' class='btn-add-smart-link btn btn-info dropdown-item'
-                data-id='{{ $order->customer->user->id }}' data-url='/users/createSmartLink'>
-                <img src="{{ asset('Auth-Panel/dist/img/logo-alloyal.svg') }}" alt="Alloyal"
-                    style="width: 45px; height: 45px; object-fit: contain; margin-right: 15px;">
-                <span class="ml-2">Acessar Alloyal</span>
-            </a>
-        @endif
+        @can('developer')
+            @if (filled($order->customer?->alloyal_id) && $order->customer?->isAlloyalActive())
+                <a href='javascript:;' class='btn-add-smart-link btn btn-info dropdown-item'
+                    data-id='{{ $order->customer->user->id }}' data-url='/users/createSmartLink'>
+                    <img src="{{ asset('Auth-Panel/dist/img/logo-alloyal.svg') }}" alt="Alloyal"
+                        style="width: 45px; height: 45px; object-fit: contain; margin-right: 15px;">
+                    <span class="ml-2">Acessar Alloyal</span>
+                </a>
+            @endif
+        @endcan
     </div>
 </div>
