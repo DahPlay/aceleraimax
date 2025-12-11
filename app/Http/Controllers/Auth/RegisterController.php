@@ -215,7 +215,10 @@ class RegisterController extends Controller
                 'email' => $data['email'] ?? 'n/a',
                 'login' => $data['login'] ?? 'n/a',
             ]);
-            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
+
+            toastr()->info('Falha na validação do registro. Tente novamente ou entre em contato com o administrador.');
+
+            return back();
         } catch (\Exception $e) {
             Log::channel('registration')->error('Erro crítico no registro', [
                 'message' => $e->getMessage(),
@@ -223,8 +226,10 @@ class RegisterController extends Controller
                 'email' => $data['email'] ?? 'n/a',
                 'login' => $data['login'] ?? 'n/a',
             ]);
-            toastr()->info($e->getMessage());
-            return back()->withInput()->withErrors(['error' => 'Ocorreu uma falha ao processar seu cadastro. Tente novamente.']);
+
+            toastr()->info('Erro crítico no registro. Tente novamente ou entre em contato com o administrador.');
+
+            return back();
         }
     }
 

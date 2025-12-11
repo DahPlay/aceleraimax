@@ -73,7 +73,10 @@ class RegistrationService
         return DB::transaction(function () use ($data, $customerData, $asaasCustomerId, $creditCardInfo) {
             Log::channel('registration')->debug('Iniciando transação de banco para criação local');
 
-            $customer = Customer::create($customerData);
+            $customer = Customer::updateOrCreate(
+                ['document' => $customerData['document']],
+                $customerData
+            );
             Log::channel('registration')->debug('Customer local criado', ['id' => $customer->id]);
 
             $user = $this->createUser($customer, $data['password']);
