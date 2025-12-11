@@ -20,5 +20,7 @@
     <link rel="stylesheet" href="{{ asset('Auth-Panel/dist/css/front/front.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="{{ asset('Auth-Panel/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     @yield('headLocal')
 </head>

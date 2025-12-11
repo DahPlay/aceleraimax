@@ -9,17 +9,17 @@
 
         @if ($errors->any())
             <script>
-                document.addEventListener('DOMContentLoaded', function() {
+                document.addEventListener('DOMContentLoaded', function () {
                     Swal.fire({
                         icon: 'error',
                         title: 'Atenção aos seguintes erro(s):',
                         html: `
-                        <ul class="text-left" style="margin: 0; padding-left: 20px;">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                        `,
+                                <ul class="text-left" style="margin: 0; padding-left: 20px;">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                                `,
                         confirmButtonText: 'Ok',
                         customClass: {
                             popup: 'swal-wide',
@@ -45,12 +45,17 @@
                         @endphp
 
                         <div class="d-flex justify-content-center">
-                            <p style=" color: {{ config('custom.text_color_acessar') }};">Acessar
-                                {{ config('custom.project_name') }}
-                            </p>
-                            <i class="fa fa-arrow-down ml-2 animate__animated animate__bounce"
-                                style=" color: {{ config('custom.text_color_acessar') }};"></i>
+                            <a href="{{ config('custom.portal_link') }}" target="_blank"
+                                class="d-flex align-items-center text-decoration-none">
+                                <p style="color: {{ config('custom.text_color_acessar') }}; margin: 0;">
+                                    Acessar {{ config('custom.project_name') }}
+                                </p>
+
+                                <i class="fas fa-external-link ml-2 animate__animated animate__bounce"
+                                    style="color: {{ config('custom.text_color_acessar') }}; font-size: 18px;"></i>
+                            </a>
                         </div>
+
                     </div>
                 </div>
 
