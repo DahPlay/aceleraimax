@@ -24,6 +24,7 @@ class Plan extends Model
         'priority',
         'hidden',
         'is_active_telemedicine',
+        'is_active_alloyal_in_free'
     ];
 
     protected function value(): Attribute

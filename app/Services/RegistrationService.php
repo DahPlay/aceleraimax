@@ -97,10 +97,6 @@ class RegistrationService
 
             Log::channel('registration')->info('Criando usuário na Alloyal');
 
-            (new UserDisable())->handle($customer->document);
-
-            Log::channel('registration')->info('Usuário inativado com sucesso no Alloyal');
-
             if ($asaasCustomerId) {
                 $customer->update([
                     'customer_id' => $asaasCustomerId,
@@ -117,6 +113,12 @@ class RegistrationService
                 Log::channel('registration')->debug('Criando pedido');
                 $order = $this->createOrder($customer, (int) $data['plan_id'], $data['coupon_id'] ?? null, (int) $userConsent->id);
                 Log::channel('registration')->debug('Pedido criado', ['order_id' => $order->id]);
+
+                if(!$order?->plan?->is_active_alloyal_in_free){
+                    (new UserDisable())->handle($customer->document);
+
+                    Log::channel('registration')->info('Usuário inativado com sucesso no Alloyal');
+                }
 
                 Log::channel('registration')->debug('Criando assinatura no Asaas');
                 $this->createAsaasSubscription($customer, $order, (int) $data['plan_id']);

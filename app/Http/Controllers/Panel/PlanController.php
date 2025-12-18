@@ -46,6 +46,7 @@ class PlanController extends Controller
                 'plans.billing_type',
                 'plans.priority',
                 'plans.is_active_telemedicine',
+                'plans.is_active_alloyal_in_free',
             ])
             ->where('hidden', '!=', 'Sim');
 
@@ -141,6 +142,7 @@ class PlanController extends Controller
         $data['is_active'] = $request->has('is_active') ? 1 : 0;
         $data['is_active_telemedicine'] = $request->has('is_active_telemedicine') ? 1 : 0;
         $data['is_best_seller'] = $request->has('is_best_seller') ? 1 : 0;
+        $data['is_active_alloyal_in_free'] = $request->has('is_active_alloyal_in_free') ? 1 : 0;
 
         // 6) Injetar priority no array de dados
         $data['priority'] = (int) $priority;
@@ -260,6 +262,7 @@ class PlanController extends Controller
             'free_for_days',
             'priority',
             'is_active_telemedicine',
+            'is_active_alloyal_in_free',
         ]);
 
         $validator = Validator::make($data, [
@@ -268,6 +271,7 @@ class PlanController extends Controller
             'description' => ['nullable', 'string'],
             'is_active' => ['nullable', 'string'],
             'is_active_telemedicine' => ['nullable', 'string'],
+            'is_active_alloyal_in_free' => ['nullable', 'string'],
             'is_best_seller' => ['nullable', 'string'],
             'billing_type' => ['string'],
             'free_for_days' => ['integer'],
@@ -290,6 +294,7 @@ class PlanController extends Controller
         $data['is_active'] = isset($data['is_active']) ? 1 : 0;
         $data['is_active_telemedicine'] = isset($data['is_active_telemedicine']) ? 1 : 0;
         $data['is_best_seller'] = isset($data['is_best_seller']) ? 1 : 0;
+        $data['is_active_alloyal_in_free'] = isset($data['is_active_alloyal_in_free']) ? 1 : 0;
 
         $plan->update($data);
 

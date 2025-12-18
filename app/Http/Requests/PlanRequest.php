@@ -17,7 +17,8 @@ class PlanRequest extends FormRequest
             'is_best_seller' => ['nullable', 'string'],
             'billing_type' => ['string'],
             'free_for_days' => ['integer'],
-            'packages' => ['required', 'array']
+            'packages' => ['required', 'array'],
+            'is_active_alloyal_in_free' => ['nullable', 'string'],
         ];
     }
 
