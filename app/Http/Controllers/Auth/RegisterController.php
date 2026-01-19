@@ -11,6 +11,7 @@ use App\Providers\RouteServiceProvider;
 use App\Services\AppIntegration\CustomerService;
 use App\Services\RegistrationService;
 use Illuminate\Contracts\Validation\Validator as ValidationValidator;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -223,17 +224,61 @@ class RegisterController extends Controller
             toastr()->info('Falha na validação do registro. Tente novamente ou entre em contato com o administrador.');
 
             return back();
-        } catch (\Exception $e) {
-            Log::channel('registration')->error('Erro crítico no registro', [
+        } catch (QueryException $e) {
+
+            $sqlState = $e->errorInfo[0] ?? null;
+            $errorCode = $e->errorInfo[1] ?? null;
+            $message = 'Ocorreu um erro ao processar seu cadastro.';
+
+            if ($errorCode == 1062) {
+
+                if (str_contains($e->getMessage(), 'customers_document_unique')) {
+                    $message = 'Este CPF já está cadastrado.';
+                } elseif (str_contains($e->getMessage(), 'customers_email_unique')) {
+                    $message = 'Este e-mail já está cadastrado.';
+                } elseif (str_contains($e->getMessage(), 'customers_login_unique')) {
+                    $message = 'Este login já está em uso.';
+                } else {
+                    $message = 'Já existe um cadastro com esses dados.';
+                }
+            }
+
+            Log::channel('registration')->warning('Erro de banco no registro', [
+                'sql_state' => $sqlState,
+                'error_code' => $errorCode,
+                'message' => $e->getMessage(),
+                'email' => $data['email'] ?? 'n/a',
+                'login' => $data['login'] ?? 'n/a',
+            ]);
+
+            toastr()->warning($message);
+            return back()->withInput();
+        } catch (\Throwable $e) {
+
+            Log::channel('registration')->critical('Erro crítico no registro', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'email' => $data['email'] ?? 'n/a',
                 'login' => $data['login'] ?? 'n/a',
             ]);
 
-            toastr()->info('Erro crítico no registro. Tente novamente ou entre em contato com o administrador.');
+            toastr()->error(
+                'Ocorreu um erro inesperado ao finalizar seu cadastro.
+                Nossa equipe já foi notificada.'
+            );
 
             return back();
+        } catch (\App\Exceptions\PaymentAsaasException $e) {
+
+            Log::channel('registration')->warning('Erro de pagamento no registro', [
+                'message' => $e->getMessage(),
+                'email' => $data['email'] ?? 'n/a',
+                'login' => $data['login'] ?? 'n/a',
+            ]);
+
+            toastr()->warning($e->getUserMessage());
+
+            return back()->withInput();
         }
     }
 

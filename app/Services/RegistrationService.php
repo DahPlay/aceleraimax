@@ -19,6 +19,7 @@ use App\Services\AppIntegration\PlanCreateService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Exceptions\PaymentAsaasException;
 
 class RegistrationService
 {
@@ -114,7 +115,7 @@ class RegistrationService
                 $order = $this->createOrder($customer, (int) $data['plan_id'], $data['coupon_id'] ?? null, (int) $userConsent->id);
                 Log::channel('registration')->debug('Pedido criado', ['order_id' => $order->id]);
 
-                if(!$order?->plan?->is_active_alloyal_in_free){
+                if (!$order?->plan?->is_active_alloyal_in_free) {
                     (new UserDisable())->handle($customer->document);
 
                     Log::channel('registration')->info('Usuário inativado com sucesso no Alloyal');
@@ -323,8 +324,20 @@ class RegistrationService
 
         if (!isset($response['creditCardToken']) || isset($response['error'])) {
             $error = $response['error']['errors'][0]['description'] ?? 'Erro ao tokenizar cartão';
+
             Log::channel('registration')->info("Asaas - falha na tokenização: {$error}");
-            throw new \Exception($error);
+
+            if (str_contains(strtolower($error), 'bloqueado')) {
+                throw new PaymentAsaasException(
+                    $error,
+                    'Seu cartão está bloqueado. Entre em contato com o banco emissor ou use outro cartão.'
+                );
+            }
+
+            throw new PaymentAsaasException(
+                $error,
+                'Não foi possível processar seu cartão. Verifique com o emissor ou utilize outro cartão.'
+            );
         }
 
         return [
@@ -416,12 +429,10 @@ class RegistrationService
         }
 
         if ($order->value <= 0) {
-            Log::channel('registration')->error("Assinatura não criada no Asaas (valor <= 0)", [
-                'customer_id' => $customer->id,
-                'order_id' => $order->id,
-                'value' => $order->value,
-            ]);
-            return;
+            throw new PaymentAsaasException(
+                'Valor inválido para assinatura',
+                'Não foi possível finalizar sua assinatura devido ao valor do plano. Entre em contato com o suporte.'
+            );
         }
 
         $adapter = new AsaasConnector();
