@@ -385,27 +385,33 @@
                         @if (
                             !session()->has('customerData') ||
                                 (session()->has('customerData') && session('customerData')['source'] !== 'temporarily'))
-                            <div class="input-group mb-3">
+                            <div class="input-group mb-1">
                                 <label class="title-input2" for="password">Crie sua senha *</label>
-                                <input type="password" @error('password') has-error @enderror
-                                    value="{{ session()->has('authenticate') ? session('customerData')['password'] : '' }}"
-                                    name="password" id="password" class="form-control"
-                                    placeholder="Crie uma senha forte" required
-                                    {{ session()->has('authenticate') ? 'readonly' : '' }}>
+                                <input type="password" name="password" id="password" class="form-control"
+                                    placeholder="Crie uma senha forte" required minlength="6">
                             </div>
+
+                            <ul id="passwordRules" class="list-unstyled mt-2">
+                                <li id="rule-length" class="text-danger">✖ Mínimo de 6 caracteres</li>
+                                <li id="rule-uppercase" class="text-danger">✖ Pelo menos 1 letra maiúscula</li>
+                                <li id="rule-number" class="text-danger">✖ Pelo menos 1 número</li>
+                                <li id="rule-special" class="text-danger">✖ Pelo menos 1 caractere especial</li>
+                            </ul>
 
                             @error('password')
                                 <span class="text-danger">{{ $message }}</span>
                                 <hr>
                             @enderror
 
-                            <div class="input-group mb-3">
+                            <div class="input-group mb-1">
                                 <label class="title-input2" for="password_confirmation">Confirmação de senha *</label>
-                                <input type="password" @error('password_confirmation') has-error @enderror
-                                    value="{{ old('password_confirmation') ?? '' }}" name="password_confirmation"
-                                    id="password_confirmation" class="form-control" placeholder="Repita sua senha"
-                                    required>
+                                <input type="password" name="password_confirmation" id="password_confirmation"
+                                    class="form-control" placeholder="Repita sua senha" required>
                             </div>
+
+                            <small id="passwordConfirmHelp" class="form-text text-white">
+                                Repita a senha digitada acima.
+                            </small>
 
                             @error('password_confirmation')
                                 <span class="text-danger">{{ $message }}</span>
@@ -416,7 +422,7 @@
                         <div class="navigation-buttons">
                             <button type="button" class="btn btn-nav btn-back" data-prev="2"
                                 style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Voltar</button>
-                            <button type="button" class="btn btn-nav btn-next" data-next="4"
+                            <button disabled id="btnNextStep" type="button" class="btn btn-nav btn-next" data-next="4"
                                 style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Próximo</button>
                         </div>
                     </div>
@@ -505,15 +511,15 @@
                             src="{{ config('custom.image_social_media_1') }}" alt=""></a>
                 </div>
                 <!-- <div class="container-social-media"
-                    style="background-color: {{ config('custom.background_social_media') }};">
-                    <a href="{{ config('custom.link_social_media_2') }}"><img
-                            src="{{ config('custom.image_social_media_2') }}" alt=""></a>
-                </div>
-                <div class="container-social-media"
-                    style="background-color: {{ config('custom.background_social_media') }};">
-                    <a href="{{ config('custom.link_social_media_3') }}"><img
-                            src="{{ config('custom.image_social_media_3') }}" alt=""></a>
-                </div> -->
+                                                        style="background-color: {{ config('custom.background_social_media') }};">
+                                                        <a href="{{ config('custom.link_social_media_2') }}"><img
+                                                                src="{{ config('custom.image_social_media_2') }}" alt=""></a>
+                                                    </div>
+                                                    <div class="container-social-media"
+                                                        style="background-color: {{ config('custom.background_social_media') }};">
+                                                        <a href="{{ config('custom.link_social_media_3') }}"><img
+                                                                src="{{ config('custom.image_social_media_3') }}" alt=""></a>
+                                                    </div> -->
             </div>
             <img class="logo-footer" src="{{ config('custom.logo_baseboard') }}" alt="">
         </div>
@@ -592,7 +598,6 @@
                 }
             });
 
-            // Se o select já vier com valor selecionado ao carregar a página
             const initialTelemedicine = $('#plan_id').find(':selected').data('telemedicine');
             if (initialTelemedicine == 1) {
                 $dependentesFields.show();
@@ -621,6 +626,66 @@
                 $('#name-error').addClass('d-none');
                 $('#name').removeClass('is-invalid');
             });
+
+            const $password = $('#password');
+            const $confirm = $('#password_confirmation');
+            const $btnNext = $('#btnNextStep');
+
+            function validatePasswordRules(password) {
+                let rules = {
+                    length: password.length >= 6,
+                    uppercase: /[A-Z]/.test(password),
+                    number: /\d/.test(password),
+                    special: /[@$!%*#?&._-]/.test(password)
+                };
+
+                $('#rule-length').toggleClass('text-success', rules.length)
+                    .toggleClass('text-danger', !rules.length)
+                    .text(`${rules.length ? '✔' : '✖'} Mínimo de 6 caracteres`);
+
+                $('#rule-uppercase').toggleClass('text-success', rules.uppercase)
+                    .toggleClass('text-danger', !rules.uppercase)
+                    .text(`${rules.uppercase ? '✔' : '✖'} Pelo menos 1 letra maiúscula`);
+
+                $('#rule-number').toggleClass('text-success', rules.number)
+                    .toggleClass('text-danger', !rules.number)
+                    .text(`${rules.number ? '✔' : '✖'} Pelo menos 1 número`);
+
+                $('#rule-special').toggleClass('text-success', rules.special)
+                    .toggleClass('text-danger', !rules.special)
+                    .text(`${rules.special ? '✔' : '✖'} Pelo menos 1 caractere especial`);
+
+                return Object.values(rules).every(Boolean);
+            }
+
+            function validateConfirm(password, confirm) {
+                return confirm.length > 0 && password === confirm;
+            }
+
+            function validateForm() {
+                let password = $password.val();
+                let confirm = $confirm.val();
+
+                let passwordValid = validatePasswordRules(password);
+                let confirmValid = validateConfirm(password, confirm);
+
+                $('#passwordConfirmHelp')
+                    .text(
+                        confirm.length === 0 ?
+                        'Repita a senha digitada acima.' :
+                        confirmValid ?
+                        'As senhas conferem ✔' :
+                        'As senhas não conferem.'
+                    )
+                    .toggleClass('text-success', confirmValid)
+                    .toggleClass('text-danger', confirm.length > 0 && !confirmValid)
+                    .toggleClass('text-white', confirm.length === 0);
+
+                $btnNext.prop('disabled', !(passwordValid && confirmValid));
+            }
+
+            $password.on('input', validateForm);
+            $confirm.on('input', validateForm);
         });
 
         function initSelects2() {

@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 class RegisterController extends Controller
 {
@@ -104,7 +105,10 @@ class RegisterController extends Controller
                 },
                 'string',
                 'confirmed',
-                'min:6'
+                Password::min(6)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
             ],
             'credit_card_number' => ['required', new \App\Rules\CreditCard()],
             'credit_card_expiry_month' => ['required', 'digits:2'],
