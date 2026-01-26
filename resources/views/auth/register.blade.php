@@ -284,7 +284,7 @@
                         </div>
 
                         <div class="navigation-buttons">
-                            <button type="button" class="btn btn-nav btn-next" data-next="2"
+                            <button disabled type="button" class="btn btn-nav btn-next" data-next="2"
                                 style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Próximo</button>
                         </div>
                     </div>
@@ -363,7 +363,7 @@
                         <div class="navigation-buttons">
                             <button type="button" class="btn btn-nav btn-back" data-prev="1"
                                 style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Voltar</button>
-                            <button type="button" class="btn btn-nav btn-next" data-next="3"
+                            <button disabled type="button" class="btn btn-nav btn-next" data-next="3"
                                 style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Próximo</button>
                         </div>
                     </div>
@@ -511,15 +511,15 @@
                             src="{{ config('custom.image_social_media_1') }}" alt=""></a>
                 </div>
                 <!-- <div class="container-social-media"
-                                                        style="background-color: {{ config('custom.background_social_media') }};">
-                                                        <a href="{{ config('custom.link_social_media_2') }}"><img
-                                                                src="{{ config('custom.image_social_media_2') }}" alt=""></a>
-                                                    </div>
-                                                    <div class="container-social-media"
-                                                        style="background-color: {{ config('custom.background_social_media') }};">
-                                                        <a href="{{ config('custom.link_social_media_3') }}"><img
-                                                                src="{{ config('custom.image_social_media_3') }}" alt=""></a>
-                                                    </div> -->
+                                                                                                style="background-color: {{ config('custom.background_social_media') }};">
+                                                                                                <a href="{{ config('custom.link_social_media_2') }}"><img
+                                                                                                        src="{{ config('custom.image_social_media_2') }}" alt=""></a>
+                                                                                            </div>
+                                                                                            <div class="container-social-media"
+                                                                                                style="background-color: {{ config('custom.background_social_media') }};">
+                                                                                                <a href="{{ config('custom.link_social_media_3') }}"><img
+                                                                                                        src="{{ config('custom.image_social_media_3') }}" alt=""></a>
+                                                                                            </div> -->
             </div>
             <img class="logo-footer" src="{{ config('custom.logo_baseboard') }}" alt="">
         </div>
@@ -686,6 +686,105 @@
 
             $password.on('input', validateForm);
             $confirm.on('input', validateForm);
+
+            function validateRequiredFields($step) {
+                let isValid = true;
+
+                $step.find('input, select, textarea').each(function() {
+                    const $field = $(this);
+
+                    if ($field.prop('required') && $field.is(':visible')) {
+
+                        if ($field.attr('type') === 'checkbox') {
+                            if (!$field.is(':checked')) {
+                                isValid = false;
+                            }
+                        } else if (!$field.val()) {
+                            isValid = false;
+                        }
+                    }
+                });
+
+                return isValid;
+            }
+
+            // Step 1
+            const $step1 = $('[data-step-content="1"]');
+            const $btnStep1 = $step1.find('.btn-next');
+
+            $(document).ready(function() {
+                $btnStep1.prop('disabled', !validateRequiredFields($step1));
+            });
+
+            $('#plan_id').on('change', function() {
+                $btnStep1.prop('disabled', !validateRequiredFields($step1));
+            });
+
+            // Step 2
+            const $step2 = $('[data-step-content="2"]');
+            const $btnStep2 = $step2.find('.btn-next');
+
+            $step2.find('input').on('input', function() {
+                $btnStep2.prop('disabled', !validateRequiredFields($step2));
+            });
+
+            // Step 3
+            let requiredFieldsValid = validateRequiredFields(
+                $('[data-step-content="3"]')
+            );
+
+            $btnNext.prop('disabled', !(passwordValid && confirmValid && requiredFieldsValid));
+
+            // Step 4
+            const $step4 = $('[data-step-content="4"]');
+            const $btnSubmit = $step4.find('.btn-submit');
+
+            $step4.find('input').on('input change', function() {
+                $btnSubmit.prop('disabled', !validateRequiredFields($step4));
+            });
+
+            $(document).ready(function() {
+                $btnSubmit.prop('disabled', !validateRequiredFields($step4));
+            });
+
+            function isValidEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            function validateRequiredFields($step) {
+                let isValid = true;
+
+                $step.find('input, select, textarea').each(function() {
+                    const $field = $(this);
+
+                    if (!$field.prop('required') || !$field.is(':visible')) {
+                        return;
+                    }
+
+                    const type = $field.attr('type');
+                    const value = $field.val();
+
+                    if (type === 'checkbox') {
+                        if (!$field.is(':checked')) {
+                            isValid = false;
+                        }
+                    } else if (type === 'email') {
+                        if (!value || !isValidEmail(value)) {
+                            isValid = false;
+                        }
+                    } else if ($field.is('select')) {
+                        if (!value) {
+                            isValid = false;
+                        }
+                    } else {
+                        if (!value) {
+                            isValid = false;
+                        }
+                    }
+                });
+
+                return isValid;
+            }
         });
 
         function initSelects2() {
