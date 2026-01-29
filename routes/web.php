@@ -29,6 +29,32 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/validate-coupon', [CouponController::class, 'validateCoupon'])
     ->name('validate.coupon');
 
+Route::post('/check-cpf', function (\Illuminate\Http\Request $request) {
+    $cpf = preg_replace('/\D/', '', $request->cpf);
+
+    return response()->json([
+        'exists' => \App\Models\Customer::where('document', $cpf)->exists()
+    ]);
+})->name('check.cpf');
+
+Route::post('/check-email', function (\Illuminate\Http\Request $request) {
+    $email = strtolower(trim($request->email));
+
+    return response()->json([
+        'exists' => \App\Models\Customer::where('email', $email)->exists()
+    ]);
+})->name('check.email');
+
+Route::post('/check-email-streaming', function (\Illuminate\Http\Request $request) {
+    $email = strtolower(trim($request->email));
+
+    $response = (new App\Services\YouCast\Customer\CustomerSearch)->handle($email);
+
+    return response()->json([
+        'exists' => !empty($response['response']),
+    ]);
+})->name('check.email.streaming');
+
 /*Route::get('/teste', function () {
     Model::withoutEvents(function () {
         $developer = User::where('login', 'Developer')->first();

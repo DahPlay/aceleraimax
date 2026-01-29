@@ -5,6 +5,19 @@
 @endsection
 
 <style>
+    .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 42px;
+        cursor: pointer;
+        color: #6c757d;
+        z-index: 5;
+    }
+
+    .toggle-password:hover {
+        color: #000;
+    }
+
     .title-input2 {
         color: {{ config('custom.text_color_form') }};
         font-weight: 500;
@@ -72,6 +85,10 @@
 
     .step.active .step-number {
         background: {{ config('custom.button_color_entrar') }};
+    }
+
+    .step.completed .step-number {
+        background: #28a745;
     }
 
     .step-label {
@@ -311,6 +328,14 @@
                             <input type="text" @error('document') has-error @enderror
                                 value="{{ old('document') ?? '' }}" name="document" id="document" class="form-control"
                                 placeholder="Digite seu cpf *" required>
+
+                            <span id="cpf-invalid" class="mt-1 small text-danger d-none">
+                                ⚠️ CPF inválido.
+                            </span>
+
+                            <span id="cpf-exists" class="mt-1 small text-danger d-none">
+                                ⚠️ Este CPF já está cadastrado.
+                            </span>
                         </div>
 
                         <div id="dependentes-fields" style="display:none;">
@@ -353,6 +378,15 @@
                             <input type="email" name="email" id="email" class="form-control"
                                 placeholder="meuemail@mail.com" required
                                 value="{{ old('email', session('customerData')['email'] ?? '') }}">
+
+                            <span id="email-error" class="mt-1 small text-danger d-none">
+                                ⚠️ Por favor, informe um e-mail válido.
+                            </span>
+
+                            <span id="email-exists" class="mt-3 small text-danger d-none">
+                                ⚠️ Este e-mail já está cadastrado, acesse um dos links abaixo para prosseguir.
+                                <span id="email-actions" class="d-block"></span>
+                            </span>
                         </div>
 
                         @error('email')
@@ -371,10 +405,10 @@
                     <!-- Step 3: Credentials -->
                     <div class="step-content" data-step-content="3">
                         <div class="input-group mb-3">
-                            <label class="title-input2" for="usuario">Digite seu usuário *</label>
+                            <label class="title-input2" for="usuario">Usuário *</label>
                             <input type="text" name="login" id="usuario" class="form-control"
                                 placeholder="Usuário *" required
-                                value="{{ old('login', session('customerData')['login'] ?? '') }}">
+                                value="{{ old('login', session('customerData')['login'] ?? '') }}" readonly>
                         </div>
 
                         @error('login')
@@ -385,10 +419,15 @@
                         @if (
                             !session()->has('customerData') ||
                                 (session()->has('customerData') && session('customerData')['source'] !== 'temporarily'))
-                            <div class="input-group mb-1">
-                                <label class="title-input2" for="password">Crie sua senha *</label>
+                            <div class="input-group mb-1 position-relative">
+                                <label class="title-input2 w-100" for="password">Crie sua senha *</label>
+
                                 <input type="password" name="password" id="password" class="form-control"
                                     placeholder="Crie uma senha forte" required minlength="6">
+
+                                <span class="toggle-password" data-target="#password">
+                                    <i class="fa fa-eye"></i>
+                                </span>
                             </div>
 
                             <ul id="passwordRules" class="list-unstyled mt-2">
@@ -403,10 +442,16 @@
                                 <hr>
                             @enderror
 
-                            <div class="input-group mb-1">
-                                <label class="title-input2" for="password_confirmation">Confirmação de senha *</label>
+                            <div class="input-group mb-1 position-relative">
+                                <label class="title-input2 w-100" for="password_confirmation">Confirmação de senha
+                                    *</label>
+
                                 <input type="password" name="password_confirmation" id="password_confirmation"
                                     class="form-control" placeholder="Repita sua senha" required>
+
+                                <span class="toggle-password" data-target="#password_confirmation">
+                                    <i class="fa fa-eye"></i>
+                                </span>
                             </div>
 
                             <small id="passwordConfirmHelp" class="form-text text-white">
@@ -511,15 +556,15 @@
                             src="{{ config('custom.image_social_media_1') }}" alt=""></a>
                 </div>
                 <!-- <div class="container-social-media"
-                                                                                                style="background-color: {{ config('custom.background_social_media') }};">
-                                                                                                <a href="{{ config('custom.link_social_media_2') }}"><img
-                                                                                                        src="{{ config('custom.image_social_media_2') }}" alt=""></a>
-                                                                                            </div>
-                                                                                            <div class="container-social-media"
-                                                                                                style="background-color: {{ config('custom.background_social_media') }};">
-                                                                                                <a href="{{ config('custom.link_social_media_3') }}"><img
-                                                                                                        src="{{ config('custom.image_social_media_3') }}" alt=""></a>
-                                                                                            </div> -->
+                                                                                                                                                                                                                                                                                                                        style="background-color: {{ config('custom.background_social_media') }};">
+                                                                                                                                                                                                                                                                                                                        <a href="{{ config('custom.link_social_media_2') }}"><img
+                                                                                                                                                                                                                                                                                                                                src="{{ config('custom.image_social_media_2') }}" alt=""></a>
+                                                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                                                                                    <div class="container-social-media"
+                                                                                                                                                                                                                                                                                                                        style="background-color: {{ config('custom.background_social_media') }};">
+                                                                                                                                                                                                                                                                                                                        <a href="{{ config('custom.link_social_media_3') }}"><img
+                                                                                                                                                                                                                                                                                                                                src="{{ config('custom.image_social_media_3') }}" alt=""></a>
+                                                                                                                                                                                                                                                                                                                    </div> -->
             </div>
             <img class="logo-footer" src="{{ config('custom.logo_baseboard') }}" alt="">
         </div>
@@ -574,6 +619,17 @@
 
 @section('javascriptLocal')
     <script>
+        let emailIsValid = false;
+        let emailExistsApp = false;
+        let emailExistsStreaming = false;
+
+        let cpfIsValid = false;
+        let cpfExists = false;
+
+        const LOGIN_URL = "{{ route('login') }}";
+        const PASSWORD_URL = "{{ route('password.request') }}";
+        const PORTAL_URL = "{{ config('custom.portal_link') }}";
+
         $(function() {
             initSelects2();
             initMasks();
@@ -582,9 +638,6 @@
             $('#plan_id').on('change', function() {
                 const planId = $(this).val();
                 const telemedicine = $(this).find(':selected').data('telemedicine');
-
-                // console.log('Plano selecionado ID:', planId);
-                // console.log('Is active telemedicine:', telemedicine);
 
                 if (telemedicine == 1) {
                     $dependentesFields.show();
@@ -606,21 +659,191 @@
                 $dependentesFields.hide();
                 $dependentesFields.hide();
             }
+
             initStepNavigation();
 
-            $('#name').on('blur input', function() {
-                const value = $(this).val().trim();
-                const parts = value.split(/\s+/).filter(part => part.length > 0);
-                const hasFullName = parts.length >= 2;
+            $('#name').on('input', function() {
+                const input = this;
 
-                if (!hasFullName && value !== '') {
-                    $('#name-error').removeClass('d-none');
-                    $(this).addClass('is-invalid');
-                } else {
-                    $('#name-error').addClass('d-none');
-                    $(this).removeClass('is-invalid');
-                }
+                nextTick(() => {
+                    const value = input.value.trim();
+                    const parts = value.split(/\s+/).filter(p => p.length > 0);
+                    const hasFullName = parts.length >= 2;
+
+                    if (!hasFullName && value !== '') {
+                        $('#name-error').removeClass('d-none');
+                        $(input).addClass('is-invalid');
+                    } else {
+                        $('#name-error').addClass('d-none');
+                        $(input).removeClass('is-invalid');
+                    }
+
+                    updateStep2Button();
+                });
             });
+
+            let cpfIsValid = false;
+            let cpfExists = false;
+            let cpfTouched = false;
+            let cpfTimeout = null;
+
+            $('#document').on('input', function() {
+                cpfTouched = true;
+
+                const raw = $(this).val();
+                const cpf = raw.replace(/\D/g, '');
+
+                clearTimeout(cpfTimeout);
+
+                cpfIsValid = false;
+                cpfExists = false;
+
+                $('#cpf-invalid, #cpf-exists').addClass('d-none');
+                $(this).removeClass('is-invalid');
+
+                if (cpf.length < 11) {
+                    updateStep2Button();
+                    return;
+                }
+
+                if (!isValidCPF(cpf)) {
+                    $('#cpf-invalid').removeClass('d-none');
+                    $(this).addClass('is-invalid');
+                    updateStep2Button();
+                    return;
+                }
+
+                cpfIsValid = true;
+
+                cpfTimeout = setTimeout(() => {
+                    $.post('{{ route('check.cpf') }}', {
+                        cpf: cpf,
+                        _token: '{{ csrf_token() }}'
+                    }).done(response => {
+                        cpfExists = response.exists;
+
+                        if (cpfExists) {
+                            $('#cpf-exists').removeClass('d-none');
+                            $('#document').addClass('is-invalid');
+                        }
+
+                        updateStep2Button();
+                    });
+                }, 400);
+
+                updateStep2Button();
+            });
+
+            $('#mobile').on('input blur', function() {
+                updateStep2Button();
+            });
+
+            let emailTimeout = null;
+
+            syncUsernameWithEmail('', false);
+
+            $('#email').on('input', function() {
+                const input = this;
+
+                emailIsValid = false;
+                emailExistsApp = false;
+                emailExistsStreaming = false;
+
+                $('#email-exists').addClass('d-none');
+                $('#email-actions').empty();
+
+                nextTick(() => {
+                    const value = input.value.trim();
+
+                    clearTimeout(emailTimeout);
+
+                    $('#email-error, #email-exists-app, #email-exists-streaming').addClass(
+                        'd-none');
+                    $(input).removeClass('is-invalid');
+
+                    if (!value) {
+                        updateStep2Button();
+                        return;
+                    }
+
+                    if (!isValidEmail(value)) {
+                        $('#email-error').removeClass('d-none');
+                        $(input).addClass('is-invalid');
+                        updateStep2Button();
+                        return;
+                    }
+
+                    emailIsValid = true;
+
+                    emailTimeout = setTimeout(() => {
+                        $.post('{{ route('check.email') }}', {
+                            email: value,
+                            _token: '{{ csrf_token() }}'
+                        }).done(appResponse => {
+                            emailExistsApp = appResponse.exists;
+
+                            updateEmailExistsMessage();
+
+                            if (emailExistsApp || emailExistsStreaming) {
+                                $('#email').addClass('is-invalid');
+                            } else {
+                                $('#email').removeClass('is-invalid');
+                            }
+
+                            $.post('{{ route('check.email.streaming') }}', {
+                                email: value,
+                                _token: '{{ csrf_token() }}'
+                            }).done(streamingResponse => {
+                                emailExistsStreaming = streamingResponse
+                                    .exists;
+
+                                updateEmailExistsMessage();
+
+                                if (emailExistsApp ||
+                                    emailExistsStreaming) {
+                                    $('#email').addClass('is-invalid');
+                                } else {
+                                    $('#email').removeClass('is-invalid');
+                                }
+
+                                const emailFullyValid =
+                                    emailIsValid &&
+                                    !emailExistsApp &&
+                                    !emailExistsStreaming;
+
+                                syncUsernameWithEmail(
+                                    emailFullyValid ? value : '',
+                                    emailFullyValid
+                                );
+
+                                updateStep2Button();
+
+                            });
+
+                        });
+
+                    }, 400);
+
+                    updateStep2Button();
+                });
+            });
+
+            function updateStep2Button() {
+                const $step2 = $('[data-step-content="2"]');
+                const $btnStep2 = $step2.find('.btn-next');
+
+                const stepValid =
+                    validateRequiredFields($step2) &&
+                    cpfIsValid &&
+                    !cpfExists &&
+                    emailIsValid &&
+                    !emailExistsApp &&
+                    !emailExistsStreaming;
+
+                $btnStep2.prop('disabled', !stepValid);
+
+                updateStepStatus();
+            }
 
             $('form').on('submit', function() {
                 $('#name-error').addClass('d-none');
@@ -662,12 +885,15 @@
                 return confirm.length > 0 && password === confirm;
             }
 
+            let passwordValid = false;
+            let confirmValid = false;
+
             function validateForm() {
                 let password = $password.val();
                 let confirm = $confirm.val();
 
-                let passwordValid = validatePasswordRules(password);
-                let confirmValid = validateConfirm(password, confirm);
+                passwordValid = validatePasswordRules(password);
+                confirmValid = validateConfirm(password, confirm);
 
                 $('#passwordConfirmHelp')
                     .text(
@@ -681,32 +907,15 @@
                     .toggleClass('text-danger', confirm.length > 0 && !confirmValid)
                     .toggleClass('text-white', confirm.length === 0);
 
-                $btnNext.prop('disabled', !(passwordValid && confirmValid));
+                const requiredFieldsValid = validateRequiredFields(
+                    $('[data-step-content="3"]')
+                );
+
+                $btnNext.prop('disabled', !(passwordValid && confirmValid && requiredFieldsValid));
             }
 
             $password.on('input', validateForm);
             $confirm.on('input', validateForm);
-
-            function validateRequiredFields($step) {
-                let isValid = true;
-
-                $step.find('input, select, textarea').each(function() {
-                    const $field = $(this);
-
-                    if ($field.prop('required') && $field.is(':visible')) {
-
-                        if ($field.attr('type') === 'checkbox') {
-                            if (!$field.is(':checked')) {
-                                isValid = false;
-                            }
-                        } else if (!$field.val()) {
-                            isValid = false;
-                        }
-                    }
-                });
-
-                return isValid;
-            }
 
             // Step 1
             const $step1 = $('[data-step-content="1"]');
@@ -747,45 +956,182 @@
                 $btnSubmit.prop('disabled', !validateRequiredFields($step4));
             });
 
-            function isValidEmail(email) {
-                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-            }
+            $(document).on('click', '.toggle-password', function() {
+                const target = $($(this).data('target'));
+                const icon = $(this).find('i');
 
-            function validateRequiredFields($step) {
-                let isValid = true;
+                if (target.attr('type') === 'password') {
+                    target.attr('type', 'text');
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    target.attr('type', 'password');
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
 
-                $step.find('input, select, textarea').each(function() {
-                    const $field = $(this);
+            $('#password, #password_confirmation').on('copy paste cut', function(e) {
+                e.preventDefault();
+            });
 
-                    if (!$field.prop('required') || !$field.is(':visible')) {
-                        return;
-                    }
-
-                    const type = $field.attr('type');
-                    const value = $field.val();
-
-                    if (type === 'checkbox') {
-                        if (!$field.is(':checked')) {
-                            isValid = false;
-                        }
-                    } else if (type === 'email') {
-                        if (!value || !isValidEmail(value)) {
-                            isValid = false;
-                        }
-                    } else if ($field.is('select')) {
-                        if (!value) {
-                            isValid = false;
-                        }
-                    } else {
-                        if (!value) {
-                            isValid = false;
-                        }
-                    }
-                });
-
-                return isValid;
-            }
         });
+
+        function updateEmailExistsMessage() {
+            const $wrapper = $('#email-exists');
+            const $actions = $('#email-actions');
+
+            $actions.empty();
+
+            if (!emailExistsApp && !emailExistsStreaming) {
+                $wrapper.addClass('d-none');
+                return;
+            }
+
+            if (emailExistsApp) {
+                $actions.append(`
+                    <br>
+                    <a href="${LOGIN_URL}"
+                    class="ml-1 text-cyan font-weight-bold btn btn-default">
+                    Minha conta
+                    </a>
+
+                    <span class="mx-1">|</span>
+
+                    <a href="${PASSWORD_URL}"
+                    class="text-cyan font-weight-bold btn btn-default">
+                    Recuperar senha
+                    </a>
+                `);
+            }
+
+            if (emailExistsStreaming) {
+                if (emailExistsApp) {
+                    $actions.append(`<span class="mx-1">|</span>`);
+                }
+
+                $actions.append(`
+                    <a href="${PORTAL_URL}"
+                    target="_blank"
+                    class="text-cyan font-weight-bold btn btn-default">
+                    Portal
+                    </a>
+                `);
+            }
+
+            $wrapper.removeClass('d-none');
+        }
+
+        function syncUsernameWithEmail(email, isValid) {
+            const $username = $('#usuario');
+
+            if (isValid) {
+                $username.val(email);
+            } else {
+                $username.val('');
+            }
+        }
+
+        function nextTick(fn) {
+            requestAnimationFrame(fn);
+        }
+
+        function isValidCPF(cpf) {
+            cpf = cpf.replace(/\D/g, '');
+
+            if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) {
+                return false;
+            }
+
+            let sum = 0;
+            let remainder;
+
+            for (let i = 1; i <= 9; i++) {
+                sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+            }
+
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.substring(9, 10))) return false;
+
+            sum = 0;
+            for (let i = 1; i <= 10; i++) {
+                sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+            }
+
+            remainder = (sum * 10) % 11;
+            if (remainder === 10 || remainder === 11) remainder = 0;
+            if (remainder !== parseInt(cpf.substring(10, 11))) return false;
+
+            return true;
+        }
+
+        function isValidFullName(name) {
+            if (!name) return false;
+
+            const parts = name.trim().split(/\s+/);
+            return parts.length >= 2;
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function validateRequiredFields($step) {
+            let isValid = true;
+
+            $step.find('input, select, textarea').each(function() {
+                const $field = $(this);
+
+                if (!$field.prop('required') || !$field.is(':visible')) {
+                    return;
+                }
+
+                const type = $field.attr('type');
+                const value = $field.val();
+                const id = $field.attr('id');
+
+                if (type === 'checkbox') {
+                    if (!$field.is(':checked')) {
+                        isValid = false;
+                    }
+                } else if (type === 'email') {
+                    if (!value || !isValidEmail(value)) {
+                        isValid = false;
+                    }
+                } else if (id === 'name') {
+                    if (!isValidFullName(value)) {
+                        isValid = false;
+                    }
+                } else if ($field.is('select')) {
+                    if (!value) {
+                        isValid = false;
+                    }
+                } else {
+                    if (!value) {
+                        isValid = false;
+                    }
+                }
+            });
+
+            return isValid;
+        }
+
+        function updateStepStatus() {
+            const currentStep = $('.step.active').data('step');
+
+            $('.step').each(function() {
+                const stepNumber = $(this).data('step');
+                const $stepContent = $('[data-step-content="' + stepNumber + '"]');
+
+                $(this).removeClass('completed');
+
+                if (stepNumber < currentStep) {
+                    if (validateRequiredFields($stepContent)) {
+                        $(this).addClass('completed');
+                    }
+                }
+            });
+        }
+
 
         function initSelects2() {
             $('#plan_id').select2({
@@ -807,26 +1153,24 @@
             $('.btn-next').on('click', function() {
                 const nextStep = $(this).data('next');
                 navigateToStep(nextStep);
+                updateStepStatus();
             });
 
             $('.btn-back').on('click', function() {
                 const prevStep = $(this).data('prev');
                 navigateToStep(prevStep);
+                updateStepStatus();
             });
         }
 
         function navigateToStep(stepNumber) {
-            // Hide all step contents
             $('.step-content').removeClass('active');
 
-            // Show current step content
             $(`.step-content[data-step-content="${stepNumber}"]`).addClass('active');
 
-            // Update progress bar
             const progressPercentage = ((stepNumber - 1) / 3) * 100;
             $('.step-progress-bar').css('width', progressPercentage + '%');
 
-            // Update step indicators
             $('.step').removeClass('active');
             $(`.step[data-step="${stepNumber}"]`).addClass('active');
         }
