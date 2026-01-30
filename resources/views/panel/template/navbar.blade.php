@@ -54,6 +54,12 @@
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         Sair
                     </a>
+
+                    @can('developer')
+                        <a href="{{ route('log-viewer.index') }}" class="dropdown-item py-2">
+                            <i class="fas fa-file-alt"></i> Logs do Sistema
+                        </a>
+                    @endcan
                 </div>
             </li>
         </ul>

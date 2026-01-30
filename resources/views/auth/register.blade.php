@@ -262,6 +262,8 @@
                 <form action="{{ route('register') }}" method="post" id="registerForm">
                     @csrf
 
+                    <input id="total_with_discounted" type="hidden" value="">
+
                     <input type="hidden" name="source" id="source" class="form-control" required
                         value="{{ old('source', session('customerData')['source'] ?? '') }}"
                         {{ isset(session('customerData')['source']) ? 'readonly' : '' }}>
@@ -472,40 +474,46 @@
                         </div>
                     </div>
 
-                    <!-- Step 4: Payment -->
-                    <div class="step-content" data-step-content="4">
-                        <div class="input-group mb-3">
-                            <label class="title-input2" for="card_number">Número do cartão</label>
-                            <input name="credit_card_number" id="card_number" class="form-control"
-                                placeholder="Informe o número do cartão" min="13" maxlength="19" required
-                                value="{{ old('credit_card_number', session('customerData')['credit_card_number'] ?? '') }}">
+                    <div class="step-content" data-step-content="4" id="step-4">
+
+                        <div id="access_free" class="card bg-gradient-cyan mb-4" style="display: none;">
+                            <div class="card-header">
+                                🎁 Acesso gratuito liberado!
+                            </div>
+                            <div class="card-body">
+                                <span>Cupom de 100% aplicado 🎉🎉</span><br>
+                                <span>Aceita os termos e condições, clique em finalizar cadastro e tenha acesso gratuito a plataforma.</span>
+                            </div>
                         </div>
 
-                        <div class="input-group mb-3">
-                            <label class="title-input2" for="card_name">Nome do titular do cartão</label>
-                            <input type="text" name="credit_card_name" id="card_name" class="form-control"
-                                placeholder="Nome do titular do cartão" required
-                                value="{{ old('credit_card_name', session('customerData')['credit_card_name'] ?? '') }}">
-                        </div>
+                        <div id="credit-card-fields">
+                            <div class="input-group mb-3">
+                                <label class="title-input2" for="card_number">Número do cartão</label>
+                                <input name="credit_card_number" id="card_number" class="form-control"
+                                    placeholder="Informe o número do cartão" required>
+                            </div>
 
-                        <div class="input-group mb-3">
-                            <label class="title-input2" for="card_expiry_month">Mês</label>
-                            <input type="text" name="credit_card_expiry_month" id="card_expiry_month"
-                                class="form-control form-group" placeholder="00" min="2" maxlength="2" required
-                                value="{{ old('credit_card_expiry_month', session('customerData')['credit_card_expiry_month'] ?? '') }}">
+                            <div class="input-group mb-3">
+                                <label class="title-input2" for="card_name">Nome do titular do cartão</label>
+                                <input type="text" name="credit_card_name" id="card_name" class="form-control"
+                                    required>
+                            </div>
 
-                            <label class="title-input2" for="card_expiry_year">Ano</label>
-                            <input type="text" name="credit_card_expiry_year" id="card_expiry_year"
-                                class="form-control form-group" placeholder="0000" minlength="4" maxlength="4"
-                                required
-                                value="{{ old('credit_card_expiry_year', session('customerData')['credit_card_expiry_year'] ?? '') }}">
-                        </div>
+                            <div class="input-group mb-3">
+                                <label class="title-input2" for="card_expiry_month">Mês</label>
+                                <input type="text" name="credit_card_expiry_month" id="card_expiry_month"
+                                    class="form-control" required>
 
-                        <div class="input-group mb-3">
-                            <label class="title-input2" for="card_ccv">CVV</label>
-                            <input type="text" name="credit_card_ccv" id="card_ccv" class="form-control form-group"
-                                placeholder="000" minlength="3" maxlength="4" required
-                                value="{{ old('credit_card_ccv', session('customerData')['credit_card_ccv'] ?? '') }}">
+                                <label class="title-input2" for="card_expiry_year">Ano</label>
+                                <input type="text" name="credit_card_expiry_year" id="card_expiry_year"
+                                    class="form-control" required>
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <label class="title-input2" for="card_ccv">CVV</label>
+                                <input type="text" name="credit_card_ccv" id="card_ccv" class="form-control"
+                                    required>
+                            </div>
                         </div>
 
                         <div class="d-flex flex-row input-group mb-2 mt-4">
@@ -522,23 +530,22 @@
                                 style="background-color:{{ config('custom.background_button_next_prev') }}; color:{{ config('custom.text_color_button_next_prev') }};">Finalizar
                                 Cadastro</button>
                         </div>
-                    </div>
 
-                    @php
-                        $baseUrl = config('app.url');
-                        if (app()->environment('local')) {
-                            $baseUrl .= ':8000';
-                        }
-                    @endphp
+                        @php
+                            $baseUrl = config('app.url');
+                            if (app()->environment('local')) {
+                                $baseUrl .= ':8000';
+                            }
+                        @endphp
 
-                    <div class="footer-links">
-                        <a href="{{ route('login') }}">
-                            <i class="fa fa-user-plus mr-2"></i> Já tenho conta
-                        </a>
-                        <a href="{{ $baseUrl }}">
-                            <i class="fa fa-home mr-2"></i> Voltar para Home
-                        </a>
-                    </div>
+                        <div class="footer-links">
+                            <a href="{{ route('login') }}">
+                                <i class="fa fa-user-plus mr-2"></i> Já tenho conta
+                            </a>
+                            <a href="{{ $baseUrl }}">
+                                <i class="fa fa-home mr-2"></i> Voltar para Home
+                            </a>
+                        </div>
                 </form>
             </div>
         </div>
@@ -556,15 +563,15 @@
                             src="{{ config('custom.image_social_media_1') }}" alt=""></a>
                 </div>
                 <!-- <div class="container-social-media"
-                                                                                                                                                                                                                                                                                                                        style="background-color: {{ config('custom.background_social_media') }};">
-                                                                                                                                                                                                                                                                                                                        <a href="{{ config('custom.link_social_media_2') }}"><img
-                                                                                                                                                                                                                                                                                                                                src="{{ config('custom.image_social_media_2') }}" alt=""></a>
-                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                    <div class="container-social-media"
-                                                                                                                                                                                                                                                                                                                        style="background-color: {{ config('custom.background_social_media') }};">
-                                                                                                                                                                                                                                                                                                                        <a href="{{ config('custom.link_social_media_3') }}"><img
-                                                                                                                                                                                                                                                                                                                                src="{{ config('custom.image_social_media_3') }}" alt=""></a>
-                                                                                                                                                                                                                                                                                                                    </div> -->
+                                                                                                                                                                                                                                                                                                                                                                    style="background-color: {{ config('custom.background_social_media') }};">
+                                                                                                                                                                                                                                                                                                                                                                    <a href="{{ config('custom.link_social_media_2') }}"><img
+                                                                                                                                                                                                                                                                                                                                                                            src="{{ config('custom.image_social_media_2') }}" alt=""></a>
+                                                                                                                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                                                                                                                <div class="container-social-media"
+                                                                                                                                                                                                                                                                                                                                                                    style="background-color: {{ config('custom.background_social_media') }};">
+                                                                                                                                                                                                                                                                                                                                                                    <a href="{{ config('custom.link_social_media_3') }}"><img
+                                                                                                                                                                                                                                                                                                                                                                            src="{{ config('custom.image_social_media_3') }}" alt=""></a>
+                                                                                                                                                                                                                                                                                                                                                                </div> -->
             </div>
             <img class="logo-footer" src="{{ config('custom.logo_baseboard') }}" alt="">
         </div>
@@ -975,6 +982,19 @@
 
         });
 
+        function toggleStep4Visibility() {
+            const total = $('#total_with_discounted').val();
+            const isFree = total === '0,00';
+
+            $('#access_free').toggle(isFree);
+
+            $('#credit-card-fields').toggle(!isFree);
+
+            $('#credit-card-fields')
+                .find('input')
+                .prop('required', !isFree);
+        }
+
         function updateEmailExistsMessage() {
             const $wrapper = $('#email-exists');
             const $actions = $('#email-actions');
@@ -1152,6 +1172,7 @@
         function initStepNavigation() {
             $('.btn-next').on('click', function() {
                 const nextStep = $(this).data('next');
+
                 navigateToStep(nextStep);
                 updateStepStatus();
             });
@@ -1164,8 +1185,9 @@
         }
 
         function navigateToStep(stepNumber) {
-            $('.step-content').removeClass('active');
+            toggleStep4Visibility();
 
+            $('.step-content').removeClass('active');
             $(`.step-content[data-step-content="${stepNumber}"]`).addClass('active');
 
             const progressPercentage = ((stepNumber - 1) / 3) * 100;
@@ -1215,10 +1237,16 @@
                                 `${selectedOption.innerText.split(' - ')[0]} - R$ ${data.discounted_value}`;
                         }
 
+                        $("#total_with_discounted").val(data.discounted_value);
+
+                        toggleStep4Visibility();
                     } else {
                         feedback.innerText = data.message;
                         feedback.classList.remove('text-success');
                         feedback.classList.add('text-danger');
+
+                        $("#total_with_discounted").val('');
+                        toggleStep4Visibility();
                     }
                 });
         });

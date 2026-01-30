@@ -45,33 +45,9 @@ class RegistrationService
             ]);
 
             $asaasCustomerId = $this->createAsaasCustomer($customerData);
-
-            try {
-                $creditCardData = $this->extractCreditCardData($data);
-                Log::channel('registration')->info('Tentando tokenizar cartão', [
-                    'asaas_customer_id' => $asaasCustomerId,
-                    'card_last4' => substr($creditCardData['number'], -4),
-                    'holder' => $creditCardData['holderName'],
-                ]);
-
-                $creditCardInfo = $this->tokenizeCreditCard($asaasCustomerId, $creditCardData);
-
-                Log::channel('registration')->info('Cartão tokenizado com sucesso', [
-                    'asaas_customer_id' => $asaasCustomerId,
-                    'token' => $creditCardInfo['token'],
-                    'brand' => $creditCardInfo['brand'],
-                ]);
-            } catch (\Exception $e) {
-                Log::channel('registration')->error('Falha na tokenização do cartão. Deletando customer no Asaas.', [
-                    'asaas_customer_id' => $asaasCustomerId,
-                    'error' => $e->getMessage(),
-                ]);
-                $this->deleteAsaasCustomer($asaasCustomerId);
-                throw $e;
-            }
         }
 
-        return DB::transaction(function () use ($data, $customerData, $asaasCustomerId, $creditCardInfo) {
+        return DB::transaction(function () use ($data, $customerData, $asaasCustomerId) {
             Log::channel('registration')->debug('Iniciando transação de banco para criação local');
 
             $customer = Customer::updateOrCreate(
@@ -99,13 +75,6 @@ class RegistrationService
             Log::channel('registration')->info('Criando usuário na Alloyal');
 
             if ($asaasCustomerId) {
-                $customer->update([
-                    'customer_id' => $asaasCustomerId,
-                    'credit_card_token' => $creditCardInfo['token'],
-                    'credit_card_brand' => $creditCardInfo['brand'],
-                    'credit_card_number' => $creditCardInfo['number'],
-                ]);
-
                 Log::channel('registration')->info('Criando customer na YouCast', ['login' => $customer->login]);
                 $viewersId = $this->createYouCastCustomer($customer);
                 $customer->update(['viewers_id' => $viewersId]);
@@ -121,9 +90,44 @@ class RegistrationService
                     Log::channel('registration')->info('Usuário inativado com sucesso no Alloyal');
                 }
 
+                if ($order->value > 0) {
+                    try {
+                        $creditCardData = $this->extractCreditCardData($data);
+                        Log::channel('registration')->info('Tentando tokenizar cartão', [
+                            'asaas_customer_id' => $asaasCustomerId,
+                            'card_last4' => substr($creditCardData['number'], -4),
+                            'holder' => $creditCardData['holderName'],
+                        ]);
+
+                        $creditCardInfo = $this->tokenizeCreditCard($asaasCustomerId, $creditCardData);
+
+                        Log::channel('registration')->info('Cartão tokenizado com sucesso', [
+                            'asaas_customer_id' => $asaasCustomerId,
+                            'token' => $creditCardInfo['token'],
+                            'brand' => $creditCardInfo['brand'],
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::channel('registration')->error('Falha na tokenização do cartão. Deletando customer no Asaas.', [
+                            'asaas_customer_id' => $asaasCustomerId,
+                            'error' => $e->getMessage(),
+                        ]);
+                        $this->deleteAsaasCustomer($asaasCustomerId);
+                        throw $e;
+                    }
+
+                    $customer->update([
+                        'customer_id' => $asaasCustomerId,
+                        'credit_card_token' => $creditCardInfo['token'],
+                        'credit_card_brand' => $creditCardInfo['brand'],
+                        'credit_card_number' => $creditCardInfo['number'],
+                    ]);
+                } else {
+                    Log::channel('registration')->info('Tokenização do cartão ignoradas pelo valor ser menor ou igual a zero', ['valor' => $order->value]);
+                    Log::channel('registration')->info('Inserção dos dados do cartão ignoradas pelo valor ser menor ou igual a zero', ['valor' => $order->value]);
+                }
+
                 Log::channel('registration')->debug('Criando assinatura no Asaas');
                 $this->createAsaasSubscription($customer, $order, (int) $data['plan_id']);
-                Log::channel('registration')->info('Assinatura no Asaas criada com sucesso');
             }
 
             Log::channel('registration')->info('Registro finalizado com sucesso na transação', [
@@ -429,10 +433,12 @@ class RegistrationService
         }
 
         if ($order->value <= 0) {
-            throw new PaymentAsaasException(
-                'Valor inválido para assinatura',
-                'Não foi possível finalizar sua assinatura devido ao valor do plano. Entre em contato com o suporte.'
-            );
+            Log::channel('registration')->warning("Assinatura não criada no Asaas (valor <= 0)", [
+                'customer_id' => $customer->id,
+                'order_id' => $order->id,
+                'value' => $order->value,
+            ]);
+            return;
         }
 
         $adapter = new AsaasConnector();
@@ -461,6 +467,8 @@ class RegistrationService
             Log::channel('registration')->error("Asaas - resposta inválida na criação de assinatura: " . json_encode($response));
             throw new \Exception('Assinatura não foi criada corretamente no Asaas.');
         }
+
+        Log::channel('registration')->info('Assinatura no Asaas criada com sucesso');
 
         $order->update([
             'subscription_asaas_id' => $response['id'],

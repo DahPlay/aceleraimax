@@ -17,7 +17,7 @@ class CustomerCreate
         $data = [
             'data' => [
                 'login' => $customer->login,
-                'password' => request()->password,
+                'password' => '1234',
                 'profileName' => $customer->name,
                 'email' => $customer->email,
                 "firstname" => $nameParts[0],

@@ -49,9 +49,9 @@ class RegisterController extends Controller
         ]);
     }
 
-    protected function validator(array $data): ValidationValidator
+    protected function validator(array $data, float $finalValue): ValidationValidator
     {
-        return Validator::make($data, [
+        $rules = [
             'id' => ['integer'],
             'name' => [
                 'required',
@@ -110,12 +110,22 @@ class RegisterController extends Controller
                     ->mixedCase()
                     ->numbers()
                     ->symbols(),
-            ],
-            'credit_card_number' => ['required', new \App\Rules\CreditCard()],
-            'credit_card_expiry_month' => ['required', 'digits:2'],
-            'credit_card_expiry_year' => ['required', 'digits:4'],
-            'credit_card_ccv' => ['required'],
-        ]);
+            ]
+        ];
+
+        if ($finalValue > 0) {
+            $rules['credit_card_number'] = ['required', new \App\Rules\CreditCard()];
+            $rules['credit_card_expiry_month'] = ['required', 'digits:2'];
+            $rules['credit_card_expiry_year'] = ['required', 'digits:4'];
+            $rules['credit_card_ccv'] = ['required'];
+        } else {
+            $rules['credit_card_number'] = ['nullable'];
+            $rules['credit_card_expiry_month'] = ['nullable'];
+            $rules['credit_card_expiry_year'] = ['nullable'];
+            $rules['credit_card_ccv'] = ['nullable'];
+        }
+
+        return Validator::make($data, $rules);
     }
 
     protected function create(array $data): User
@@ -129,7 +139,19 @@ class RegisterController extends Controller
 
     public function register(Request $request, CustomerService $customerService, RegistrationService $registrationService)
     {
-        $this->validator($request->all())->validate();
+        $data = $request->all();
+
+        $plan = Plan::findOrFail($request->input('plan_id'));
+        $finalValue = $plan->value;
+
+        if (!empty($data['coupon'])) {
+            $coupon = Coupon::where('name', $data['coupon'])->first();
+            if ($coupon) {
+                $finalValue -= ($plan->value * ($coupon->percent / 100));
+            }
+        }
+
+        $this->validator($data, $finalValue)->validate();
 
         $data = $request->only([
             'plan_id',
