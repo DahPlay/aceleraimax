@@ -75,11 +75,5 @@
             </form>
         </div>
     </div>
-
-    <div class="login-logo position-absolute">
-        <a href="{{ route('login') }}">
-            <img src="{{ config('custom.logo_2') }}" alt="">
-        </a>
-    </div>
 </div>
 @endsection

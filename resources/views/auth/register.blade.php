@@ -1,216 +1,216 @@
 @extends('auth.template.index')
 
-@section('css')
+@section('headLocal')
     <link rel="stylesheet" href="{{ asset('Auth-Panel/dist/css/front/front.css') }}">
+
+    <style>
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 42px;
+            cursor: pointer;
+            color: #6c757d;
+            z-index: 5;
+        }
+
+        .toggle-password:hover {
+            color: #000;
+        }
+
+        .title-input2 {
+            color: {{ config('custom.text_color_form') }};
+            font-weight: 500;
+        }
+
+        .subtitle-register2 {
+            font-weight: 700;
+            color: {{ config('custom.text_color_form') }};
+            margin-bottom: 50px !important;
+            text-align: center;
+        }
+
+        /* New step-by-step styles */
+        .step-progress {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .step-progress:before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+
+        .step-progress-bar {
+            position: absolute;
+            top: 15px;
+            left: 0;
+            height: 2px;
+            background: {{ config('custom.button_color_entrar') }};
+            z-index: 2;
+            transition: width 0.3s ease;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 3;
+            flex: 1;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .step.active .step-number {
+            background: {{ config('custom.button_color_entrar') }};
+        }
+
+        .step.completed .step-number {
+            background: #28a745;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+
+        .step.active .step-label {
+            color: {{ config('custom.text_color_form') }};
+            font-weight: bold;
+        }
+
+        .step-content {
+            display: none;
+
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .btn-nav {
+            padding: 10px 25px;
+            border-radius: 5px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back {
+            background: transparent;
+            color: {{ config('custom.text_color_form') }};
+            border: 1px solid #ddd;
+        }
+
+        .btn-back:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-next,
+        .btn-submit {
+            background: {{ config('custom.button_color_entrar') }};
+            color: white;
+            margin-left: auto;
+        }
+
+        .btn-next:hover,
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+
+        .btn-submit {
+            padding: 12px 25px;
+            font-weight: 600;
+        }
+
+        .footer-links {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .footer-links a {
+            display: block;
+            margin-bottom: 10px;
+            color: {{ config('custom.text_color_form') }};
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Plan modal adjustments */
+        .plan-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .best-seller-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #ff5722;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .plan-price {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .plan-features {
+            margin: 15px 0;
+        }
+
+        .plan-features li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .plan-features li:before {
+            content: "✓";
+            margin-right: 8px;
+            color: {{ config('custom.button_color_entrar') }};
+        }
+    </style>
 @endsection
-
-<style>
-    .toggle-password {
-        position: absolute;
-        right: 12px;
-        top: 42px;
-        cursor: pointer;
-        color: #6c757d;
-        z-index: 5;
-    }
-
-    .toggle-password:hover {
-        color: #000;
-    }
-
-    .title-input2 {
-        color: {{ config('custom.text_color_form') }};
-        font-weight: 500;
-    }
-
-    .subtitle-register2 {
-        font-weight: 700;
-        color: {{ config('custom.text_color_form') }};
-        margin-bottom: 50px !important;
-        text-align: center;
-    }
-
-    /* New step-by-step styles */
-    .step-progress {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 30px;
-        position: relative;
-        max-width: 500px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .step-progress:before {
-        content: '';
-        position: absolute;
-        top: 15px;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: #e0e0e0;
-        z-index: 1;
-    }
-
-    .step-progress-bar {
-        position: absolute;
-        top: 15px;
-        left: 0;
-        height: 2px;
-        background: {{ config('custom.button_color_entrar') }};
-        z-index: 2;
-        transition: width 0.3s ease;
-    }
-
-    .step {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        z-index: 3;
-        flex: 1;
-    }
-
-    .step-number {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: #e0e0e0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-
-    .step.active .step-number {
-        background: {{ config('custom.button_color_entrar') }};
-    }
-
-    .step.completed .step-number {
-        background: #28a745;
-    }
-
-    .step-label {
-        font-size: 12px;
-        color: #999;
-        text-align: center;
-    }
-
-    .step.active .step-label {
-        color: {{ config('custom.text_color_form') }};
-        font-weight: bold;
-    }
-
-    .step-content {
-        display: none;
-
-    }
-
-    .step-content.active {
-        display: block;
-    }
-
-    .navigation-buttons {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 30px;
-        gap: 15px;
-    }
-
-    .btn-nav {
-        padding: 10px 25px;
-        border-radius: 5px;
-        font-weight: 600;
-        border: none;
-        transition: all 0.3s ease;
-    }
-
-    .btn-back {
-        background: transparent;
-        color: {{ config('custom.text_color_form') }};
-        border: 1px solid #ddd;
-    }
-
-    .btn-back:hover {
-        background: #f5f5f5;
-    }
-
-    .btn-next,
-    .btn-submit {
-        background: {{ config('custom.button_color_entrar') }};
-        color: white;
-        margin-left: auto;
-    }
-
-    .btn-next:hover,
-    .btn-submit:hover {
-        opacity: 0.9;
-    }
-
-    .btn-submit {
-        padding: 12px 25px;
-        font-weight: 600;
-    }
-
-    .footer-links {
-        margin-top: 30px;
-        text-align: center;
-    }
-
-    .footer-links a {
-        display: block;
-        margin-bottom: 10px;
-        color: {{ config('custom.text_color_form') }};
-        text-decoration: none;
-    }
-
-    .footer-links a:hover {
-        text-decoration: underline;
-    }
-
-    /* Plan modal adjustments */
-    .plan-card {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        position: relative;
-    }
-
-    .best-seller-badge {
-        position: absolute;
-        top: -10px;
-        right: 20px;
-        background: #ff5722;
-        color: white;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-    }
-
-    .plan-price {
-        font-size: 24px;
-        font-weight: bold;
-        margin: 10px 0;
-    }
-
-    .plan-features {
-        margin: 15px 0;
-    }
-
-    .plan-features li {
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-    }
-
-    .plan-features li:before {
-        content: "✓";
-        margin-right: 8px;
-        color: {{ config('custom.button_color_entrar') }};
-    }
-</style>
 
 @section('content')
     <div class="register-box flex-column">
@@ -387,7 +387,7 @@
 
                             <span id="email-exists" class="mt-3 small text-danger d-none">
                                 ⚠️ Este e-mail já está cadastrado, acesse um dos links abaixo para prosseguir.
-                                <span id="email-actions" class="d-block"></span>
+                                <span id="email-actions" class="d-block mt-3"></span>
                             </span>
                         </div>
 
@@ -482,7 +482,8 @@
                             </div>
                             <div class="card-body">
                                 <span>Cupom de 100% aplicado 🎉🎉</span><br>
-                                <span>Aceita os termos e condições, clique em finalizar cadastro e tenha acesso gratuito a plataforma.</span>
+                                <span>Aceita os termos e condições, clique em finalizar cadastro e tenha acesso gratuito a
+                                    plataforma.</span>
                             </div>
                         </div>
 
@@ -550,6 +551,8 @@
             </div>
         </div>
     </div>
+    </div>
+
     <footer class="section-container d-flex flex-column align-items-center footer-register"
         style="background-color: {{ config('custom.background_baseboard') }};">
         <p>{{ config('custom.text_baseboard') }}</p>
@@ -562,18 +565,9 @@
                     <a href="{{ config('custom.link_social_media_1') }}"><img
                             src="{{ config('custom.image_social_media_1') }}" alt=""></a>
                 </div>
-                <!-- <div class="container-social-media"
-                                                                                                                                                                                                                                                                                                                                                                    style="background-color: {{ config('custom.background_social_media') }};">
-                                                                                                                                                                                                                                                                                                                                                                    <a href="{{ config('custom.link_social_media_2') }}"><img
-                                                                                                                                                                                                                                                                                                                                                                            src="{{ config('custom.image_social_media_2') }}" alt=""></a>
-                                                                                                                                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                                                                                                                                                <div class="container-social-media"
-                                                                                                                                                                                                                                                                                                                                                                    style="background-color: {{ config('custom.background_social_media') }};">
-                                                                                                                                                                                                                                                                                                                                                                    <a href="{{ config('custom.link_social_media_3') }}"><img
-                                                                                                                                                                                                                                                                                                                                                                            src="{{ config('custom.image_social_media_3') }}" alt=""></a>
-                                                                                                                                                                                                                                                                                                                                                                </div> -->
             </div>
-            <img class="logo-footer" src="{{ config('custom.logo_baseboard') }}" alt="">
+
+            <img class="logo-footer" src="{{ config('custom.logo_1') }}" alt="">
         </div>
         <p class="copyright-footer">{{ config('custom.text_copy') }}</p>
     </footer>
@@ -979,7 +973,6 @@
             $('#password, #password_confirmation').on('copy paste cut', function(e) {
                 e.preventDefault();
             });
-
         });
 
         function toggleStep4Visibility() {

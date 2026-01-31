@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\Rules\Password as PasswordRules;
 
 class ResetPasswordController extends Controller
 {
@@ -27,17 +28,40 @@ class ResetPasswordController extends Controller
 
     use ResetsPasswords;
 
-    /**
-     * Where to redirect users after resetting their password.
-     *
-     * @var string
-     */
     protected $redirectTo = RouteServiceProvider::HOME;
+
+    protected function rules()
+    {
+        return [
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => [
+                'required',
+                'string',
+                'confirmed',
+                PasswordRules::min(6)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
+            ],
+        ];
+    }
+
+    protected function validationErrorMessages()
+    {
+        return [
+            'email.required' => 'O campo email é obrigatório.',
+            'email.email' => 'O campo email deve conter um endereço de email válido.',
+            'password.required' => 'O campo senha é obrigatório.',
+            'password.confirmed' => 'As senhas não conferem.',
+            'token.required' => 'Token de redefinição é obrigatório.',
+        ];
+    }
 
     public function reset(Request $request)
     {
         // Valida a solicitação antes de continuar
-        // $request->validate($this->rules(), $this->validationErrorMessages());
+        $request->validate($this->rules(), $this->validationErrorMessages());
 
         $credentials = $this->credentials($request);
 
@@ -71,13 +95,6 @@ class ResetPasswordController extends Controller
         $user->save();
     }
 
-
-    /**
-     * Atualiza o customer no sistema YouCast.
-     *
-     * @param Customer $customer
-     * @return void
-     */
     private function updateCustomerInYouCast(Customer $customer): void
     {
         $response = (new CustomerUpdate())->handle($customer);
