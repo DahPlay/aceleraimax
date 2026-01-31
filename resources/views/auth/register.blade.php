@@ -298,7 +298,10 @@
                                         placeholder="Digite seu cupom">
                                     <button type="button" id="applyCoupon" class="btn btn-primary">Aplicar</button>
                                 </div>
-                                <small id="couponFeedback" class="form-text text-danger"></small>
+                                <small id="couponFeedback" class="form-text"></small>
+                                <small id="couponWarning" class="form-text text-warning d-none mt-1">
+                                    ⚠️ Aplique um cupom válido ou limpe o campo para continuar.
+                                </small>
                             </div>
                         </div>
 
@@ -627,14 +630,51 @@
         let cpfIsValid = false;
         let cpfExists = false;
 
+        // Variáveis de controle do cupom (escopo global)
+        let couponApplied = false;
+        let couponFieldHasValue = false;
+
         const LOGIN_URL = "{{ route('login') }}";
         const PASSWORD_URL = "{{ route('password.request') }}";
         const PORTAL_URL = "{{ config('custom.portal_link') }}";
 
+        // Função global para atualizar botão do Step 1
+        function updateStep1Button() {
+            const $step1 = $('[data-step-content="1"]');
+            const $btnStep1 = $step1.find('.btn-next');
+            const planSelected = $('#plan_id').val() !== '';
+
+            let canProceed = false;
+
+            if (planSelected) {
+                if (!couponFieldHasValue) {
+                    // Campo vazio: pode prosseguir
+                    canProceed = true;
+                    $('#couponWarning').addClass('d-none');
+                } else if (couponApplied) {
+                    // Cupom aplicado com sucesso: pode prosseguir
+                    canProceed = true;
+                    $('#couponWarning').addClass('d-none');
+                } else {
+                    // Campo preenchido mas cupom não aplicado: não pode prosseguir
+                    canProceed = false;
+                    $('#couponWarning').removeClass('d-none');
+                }
+            }
+
+            $btnStep1.prop('disabled', !canProceed);
+        }
+
         $(function() {
             initSelects2();
             initMasks();
+
             const $dependentesFields = $('#dependentes-fields');
+
+            // Salva o texto original das opções de plano
+            $('#plan_id option').each(function() {
+                $(this).data('original-text', $(this).text());
+            });
 
             $('#plan_id').on('change', function() {
                 const planId = $(this).val();
@@ -642,24 +682,50 @@
 
                 if (telemedicine == 1) {
                     $dependentesFields.show();
-                    $dependentesFields.show();
                 } else {
                     $dependentesFields.hide();
-                    $dependentesFields.hide();
-                    // opcional: limpar os campos ao esconder
-                    $dependentesFields.find('input').val('');
                     $dependentesFields.find('input').val('');
                 }
+
+                updateStep1Button();
             });
 
             const initialTelemedicine = $('#plan_id').find(':selected').data('telemedicine');
             if (initialTelemedicine == 1) {
                 $dependentesFields.show();
-                $dependentesFields.show();
             } else {
                 $dependentesFields.hide();
-                $dependentesFields.hide();
             }
+
+            // Validação inicial do Step 1
+            updateStep1Button();
+
+            // Monitora mudanças no campo de cupom
+            $('#coupon').on('input', function() {
+                const value = $(this).val().trim();
+                couponFieldHasValue = value.length > 0;
+
+                // Se o campo foi limpo, reseta o status
+                if (!couponFieldHasValue) {
+                    couponApplied = false;
+                    $('#couponFeedback').text('').removeClass('text-success text-danger');
+                    $('#couponWarning').addClass('d-none');
+
+                    // Restaura o valor original do plano
+                    const $selectedOption = $('#plan_id option:selected');
+                    if ($selectedOption.length) {
+                        const originalText = $selectedOption.data('original-text');
+                        if (originalText) {
+                            $selectedOption.text(originalText);
+                        }
+                    }
+
+                    $('#total_with_discounted').val('');
+                    toggleStep4Visibility();
+                }
+
+                updateStep1Button();
+            });
 
             initStepNavigation();
 
@@ -683,8 +749,6 @@
                 });
             });
 
-            let cpfIsValid = false;
-            let cpfExists = false;
             let cpfTouched = false;
             let cpfTimeout = null;
 
@@ -918,18 +982,6 @@
             $password.on('input', validateForm);
             $confirm.on('input', validateForm);
 
-            // Step 1
-            const $step1 = $('[data-step-content="1"]');
-            const $btnStep1 = $step1.find('.btn-next');
-
-            $(document).ready(function() {
-                $btnStep1.prop('disabled', !validateRequiredFields($step1));
-            });
-
-            $('#plan_id').on('change', function() {
-                $btnStep1.prop('disabled', !validateRequiredFields($step1));
-            });
-
             // Step 2
             const $step2 = $('[data-step-content="2"]');
             const $btnStep2 = $step2.find('.btn-next');
@@ -1001,19 +1053,19 @@
 
             if (emailExistsApp) {
                 $actions.append(`
-                    <br>
-                    <a href="${LOGIN_URL}"
-                    class="ml-1 text-cyan font-weight-bold btn btn-default">
-                    Minha conta
-                    </a>
+                <br>
+                <a href="${LOGIN_URL}"
+                class="ml-1 text-cyan font-weight-bold btn btn-default">
+                Minha conta
+                </a>
 
-                    <span class="mx-1">|</span>
+                <span class="mx-1">|</span>
 
-                    <a href="${PASSWORD_URL}"
-                    class="text-cyan font-weight-bold btn btn-default">
-                    Recuperar senha
-                    </a>
-                `);
+                <a href="${PASSWORD_URL}"
+                class="text-cyan font-weight-bold btn btn-default">
+                Recuperar senha
+                </a>
+            `);
             }
 
             if (emailExistsStreaming) {
@@ -1022,12 +1074,12 @@
                 }
 
                 $actions.append(`
-                    <a href="${PORTAL_URL}"
-                    target="_blank"
-                    class="text-cyan font-weight-bold btn btn-default">
-                    Portal
-                    </a>
-                `);
+                <a href="${PORTAL_URL}"
+                target="_blank"
+                class="text-cyan font-weight-bold btn btn-default">
+                Portal
+                </a>
+            `);
             }
 
             $wrapper.removeClass('d-none');
@@ -1145,7 +1197,6 @@
             });
         }
 
-
         function initSelects2() {
             $('#plan_id').select2({
                 theme: "bootstrap4",
@@ -1195,11 +1246,18 @@
         }
 
         document.getElementById('applyCoupon').addEventListener('click', function() {
-            const coupon = document.getElementById('coupon').value;
+            const coupon = document.getElementById('coupon').value.trim();
             const planId = document.querySelector('select[name="plan_id"]').value;
 
-            if (!coupon || !planId) {
-                document.getElementById('couponFeedback').innerText = 'Selecione um plano e insira um cupom.';
+            if (!planId) {
+                document.getElementById('couponFeedback').innerText = 'Selecione um plano primeiro.';
+                document.getElementById('couponFeedback').className = 'form-text text-danger';
+                return;
+            }
+
+            if (!coupon) {
+                document.getElementById('couponFeedback').innerText = 'Digite um cupom.';
+                document.getElementById('couponFeedback').className = 'form-text text-danger';
                 return;
             }
 
@@ -1219,28 +1277,41 @@
                 .then(data => {
                     const feedback = document.getElementById('couponFeedback');
                     if (data.valid) {
+                        couponApplied = true;
                         feedback.innerText = data.message;
-                        feedback.classList.remove('text-danger');
-                        feedback.classList.add('text-success');
+                        feedback.className = 'form-text text-success';
 
                         const selectedOption = document.querySelector(
                             `select[name="plan_id"] option[value="${planId}"]`);
                         if (selectedOption) {
-                            selectedOption.innerText =
-                                `${selectedOption.innerText.split(' - ')[0]} - R$ ${data.discounted_value}`;
+                            const originalText = selectedOption.getAttribute('data-original-text') ||
+                                $(selectedOption).data('original-text');
+                            const planName = originalText.split(' - ')[0];
+                            selectedOption.innerText = `${planName} - R$ ${data.discounted_value}`;
                         }
 
                         $("#total_with_discounted").val(data.discounted_value);
-
                         toggleStep4Visibility();
+
+                        updateStep1Button();
                     } else {
+                        couponApplied = false;
                         feedback.innerText = data.message;
-                        feedback.classList.remove('text-success');
-                        feedback.classList.add('text-danger');
+                        feedback.className = 'form-text text-danger';
 
                         $("#total_with_discounted").val('');
                         toggleStep4Visibility();
+
+                        updateStep1Button();
                     }
+                })
+                .catch(error => {
+                    console.error('Erro ao validar cupom:', error);
+                    couponApplied = false;
+                    document.getElementById('couponFeedback').innerText =
+                        'Erro ao validar cupom. Tente novamente.';
+                    document.getElementById('couponFeedback').className = 'form-text text-danger';
+                    updateStep1Button();
                 });
         });
     </script>
