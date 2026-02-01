@@ -67,7 +67,7 @@ class CustomerController extends Controller
                 return $customer->created_at ? date('d/m/Y H:i:s', strtotime($customer->created_at)) : 'Sem data';
             })
             ->filterColumn('created_at', function ($query, $value) {
-                $query->whereRaw("DATE_FORMAT(created_at,'%d/%m/%Y %H:%i:%s') like ?", ["%$value%"]);
+                $query->whereRaw("DATE_FORMAT(customers.created_at,'%d/%m/%Y %H:%i:%s') like ?", ["%$value%"]);
             })
             ->addColumn('action', function ($customer) {
                 $loggedId = auth()->user()->id;

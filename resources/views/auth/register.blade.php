@@ -338,6 +338,10 @@
                                 ⚠️ CPF inválido.
                             </span>
 
+                            <span id="cpf-checking" class="mt-1 small text-info d-none">
+                                🔄 Verificando CPF...
+                            </span>
+
                             <span id="cpf-exists" class="mt-1 small text-danger d-none">
                                 ⚠️ Este CPF já está cadastrado.
                             </span>
@@ -386,6 +390,10 @@
 
                             <span id="email-error" class="mt-1 small text-danger d-none">
                                 ⚠️ Por favor, informe um e-mail válido.
+                            </span>
+
+                            <span id="email-checking" class="mt-1 small text-info d-none">
+                                🔄 Verificando disponibilidade do email...
                             </span>
 
                             <span id="email-exists" class="mt-3 small text-danger d-none">
@@ -627,18 +635,18 @@
         let emailExistsApp = false;
         let emailExistsStreaming = false;
 
-        let cpfIsValid = false;
-        let cpfExists = false;
-
-        // Variáveis de controle do cupom (escopo global)
         let couponApplied = false;
         let couponFieldHasValue = false;
+        let emailIsChecking = false;
+
+        let cpfIsValid = false;
+        let cpfExists = false;
+        let cpfIsChecking = false;
 
         const LOGIN_URL = "{{ route('login') }}";
         const PASSWORD_URL = "{{ route('password.request') }}";
         const PORTAL_URL = "{{ config('custom.portal_link') }}";
 
-        // Função global para atualizar botão do Step 1
         function updateStep1Button() {
             const $step1 = $('[data-step-content="1"]');
             const $btnStep1 = $step1.find('.btn-next');
@@ -671,7 +679,6 @@
 
             const $dependentesFields = $('#dependentes-fields');
 
-            // Salva o texto original das opções de plano
             $('#plan_id option').each(function() {
                 $(this).data('original-text', $(this).text());
             });
@@ -697,21 +704,17 @@
                 $dependentesFields.hide();
             }
 
-            // Validação inicial do Step 1
             updateStep1Button();
 
-            // Monitora mudanças no campo de cupom
             $('#coupon').on('input', function() {
                 const value = $(this).val().trim();
                 couponFieldHasValue = value.length > 0;
 
-                // Se o campo foi limpo, reseta o status
                 if (!couponFieldHasValue) {
                     couponApplied = false;
                     $('#couponFeedback').text('').removeClass('text-success text-danger');
                     $('#couponWarning').addClass('d-none');
 
-                    // Restaura o valor original do plano
                     const $selectedOption = $('#plan_id option:selected');
                     if ($selectedOption.length) {
                         const originalText = $selectedOption.data('original-text');
@@ -762,8 +765,9 @@
 
                 cpfIsValid = false;
                 cpfExists = false;
+                cpfIsChecking = false;
 
-                $('#cpf-invalid, #cpf-exists').addClass('d-none');
+                $('#cpf-invalid, #cpf-exists, #cpf-checking').addClass('d-none');
                 $(this).removeClass('is-invalid');
 
                 if (cpf.length < 11) {
@@ -779,6 +783,9 @@
                 }
 
                 cpfIsValid = true;
+                cpfIsChecking = true;
+                $('#cpf-checking').removeClass('d-none');
+                updateStep2Button();
 
                 cpfTimeout = setTimeout(() => {
                     $.post('{{ route('check.cpf') }}', {
@@ -792,6 +799,12 @@
                             $('#document').addClass('is-invalid');
                         }
 
+                        cpfIsChecking = false;
+                        $('#cpf-checking').addClass('d-none');
+                        updateStep2Button();
+                    }).fail(() => {
+                        cpfIsChecking = false;
+                        $('#cpf-checking').addClass('d-none');
                         updateStep2Button();
                     });
                 }, 400);
@@ -813,9 +826,11 @@
                 emailIsValid = false;
                 emailExistsApp = false;
                 emailExistsStreaming = false;
+                emailIsChecking = false;
 
                 $('#email-exists').addClass('d-none');
                 $('#email-actions').empty();
+                $('#email-checking').addClass('d-none');
 
                 nextTick(() => {
                     const value = input.value.trim();
@@ -823,7 +838,7 @@
                     clearTimeout(emailTimeout);
 
                     $('#email-error, #email-exists-app, #email-exists-streaming').addClass(
-                        'd-none');
+                    'd-none');
                     $(input).removeClass('is-invalid');
 
                     if (!value) {
@@ -839,13 +854,23 @@
                     }
 
                     emailIsValid = true;
+                    emailIsChecking = true;
+                    $('#email-checking').removeClass('d-none');
+                    updateStep2Button();
 
                     emailTimeout = setTimeout(() => {
-                        $.post('{{ route('check.email') }}', {
-                            email: value,
-                            _token: '{{ csrf_token() }}'
-                        }).done(appResponse => {
+                        Promise.all([
+                            $.post('{{ route('check.email') }}', {
+                                email: value,
+                                _token: '{{ csrf_token() }}'
+                            }),
+                            $.post('{{ route('check.email.streaming') }}', {
+                                email: value,
+                                _token: '{{ csrf_token() }}'
+                            })
+                        ]).then(([appResponse, streamingResponse]) => {
                             emailExistsApp = appResponse.exists;
+                            emailExistsStreaming = streamingResponse.exists;
 
                             updateEmailExistsMessage();
 
@@ -855,36 +880,26 @@
                                 $('#email').removeClass('is-invalid');
                             }
 
-                            $.post('{{ route('check.email.streaming') }}', {
-                                email: value,
-                                _token: '{{ csrf_token() }}'
-                            }).done(streamingResponse => {
-                                emailExistsStreaming = streamingResponse
-                                    .exists;
+                            const emailFullyValid = emailIsValid && !
+                                emailExistsApp && !emailExistsStreaming;
 
-                                updateEmailExistsMessage();
+                            syncUsernameWithEmail(emailFullyValid ? value : '',
+                                emailFullyValid);
 
-                                if (emailExistsApp ||
-                                    emailExistsStreaming) {
-                                    $('#email').addClass('is-invalid');
-                                } else {
-                                    $('#email').removeClass('is-invalid');
-                                }
+                            emailIsChecking = false;
+                            $('#email-checking').addClass('d-none');
+                            updateStep2Button();
 
-                                const emailFullyValid =
-                                    emailIsValid &&
-                                    !emailExistsApp &&
-                                    !emailExistsStreaming;
+                        }).catch(error => {
+                            console.error('Erro ao verificar email:', error);
+                            emailIsChecking = false;
+                            $('#email-checking').addClass('d-none');
 
-                                syncUsernameWithEmail(
-                                    emailFullyValid ? value : '',
-                                    emailFullyValid
-                                );
+                            $('#email-error').removeClass('d-none').text(
+                                '⚠️ Erro ao verificar email. Tente novamente.');
+                            $('#email').addClass('is-invalid');
 
-                                updateStep2Button();
-
-                            });
-
+                            updateStep2Button();
                         });
 
                     }, 400);
@@ -901,9 +916,11 @@
                     validateRequiredFields($step2) &&
                     cpfIsValid &&
                     !cpfExists &&
+                    !cpfIsChecking &&
                     emailIsValid &&
                     !emailExistsApp &&
-                    !emailExistsStreaming;
+                    !emailExistsStreaming &&
+                    !emailIsChecking;
 
                 $btnStep2.prop('disabled', !stepValid);
 
@@ -1053,7 +1070,6 @@
 
             if (emailExistsApp) {
                 $actions.append(`
-                <br>
                 <a href="${LOGIN_URL}"
                 class="ml-1 text-cyan font-weight-bold btn btn-default">
                 Minha conta

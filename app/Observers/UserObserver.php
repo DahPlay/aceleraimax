@@ -25,6 +25,6 @@ class UserObserver
             (new CustomerUpdate)->handle($user->customer);
         }
 
-        Log::error('UserObserver - line 24:', $customerSearch);
+        Log::info('UserObserver - line 28:', $customerSearch);
     }
 }

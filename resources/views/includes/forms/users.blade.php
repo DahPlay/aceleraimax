@@ -70,28 +70,10 @@
             </div>
         </div>
 
-        <div class="form-group col-12 col-md-4">
-            <label for="name" class="col-form-label">Senha:</label>
-            <div class="input-group">
-                <input type="password" id="password" class="form-control" name="password" placeholder="Senha *"
-                    autocomplete="off">
-            </div>
-        </div>
-
-        <div class="form-group col-12 col-md-4">
-            <label for="name" class="col-form-label">Confirmar senha:</label>
-            <div class="input-group">
-                <input type="password" id="password_confirmation" class="form-control" name="password_confirmation"
-                    placeholder="Confirmar senha *" autocomplete="off">
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
         <div class="form-group col-4">
             <label for="document" class="col-form-label text-danger">CPF: *</label>
             <div class="input-group">
-                <input type="text" id="document" class="form-control" name="document" placeholder="Usuário *"
+                <input type="text" id="document" class="form-control" name="document" placeholder="CPF *"
                     value="{{ $user->customer->document ?? old('document') }}" required>
             </div>
         </div>
@@ -99,9 +81,47 @@
         <div class="form-group col-4">
             <label for="mobile" class="col-form-label text-danger">Celular: *</label>
             <div class="input-group">
-                <input type="text" id="mobile" class="form-control" name="mobile" placeholder="Usuário *"
+                <input type="text" id="mobile" class="form-control" name="mobile" placeholder="Celular *"
                     value="{{ $user->customer->mobile ?? old('mobile') }}" required>
             </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="form-group col-12 col-md-4 position-relative">
+            <label for="password" class="col-form-label">Senha:</label>
+            <div class="input-group position-relative">
+                <input type="password" id="password" class="form-control" name="password" placeholder="Senha"
+                    autocomplete="off">
+                <span class="toggle-password-modal" data-target="#password"
+                    style="position: absolute; right: 12px; top: 8px; cursor: pointer; color: #6c757d; z-index: 5;">
+                    <i class="fa fa-eye"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group col-12 col-md-4 position-relative">
+            <label for="password_confirmation" class="col-form-label">Confirmar senha:</label>
+            <div class="input-group position-relative">
+                <input type="password" id="password_confirmation" class="form-control" name="password_confirmation"
+                    placeholder="Confirmar senha" autocomplete="off">
+                <span class="toggle-password-modal" data-target="#password_confirmation"
+                    style="position: absolute; right: 12px; top: 8px; cursor: pointer; color: #6c757d; z-index: 5;">
+                    <i class="fa fa-eye"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <ul id="passwordRulesModal" class="list-unstyled mt-2 d-none">
+                <li id="rule-length-modal" class="text-muted small">✖ Mínimo de 6 caracteres</li>
+                <li id="rule-uppercase-modal" class="text-muted small">✖ Pelo menos 1 letra maiúscula</li>
+                <li id="rule-number-modal" class="text-muted small">✖ Pelo menos 1 número</li>
+                <li id="rule-special-modal" class="text-muted small">✖ Pelo menos 1 caractere especial</li>
+            </ul>
+            <small id="passwordConfirmHelpModal" class="form-text text-muted d-none">
+                Repita a senha digitada acima.
+            </small>
         </div>
     </div>
 </div>
@@ -122,8 +142,7 @@
 
         if ($('#photo').length) {
             if (document.getElementById('photo').files.length) {
-                formData.append('photo', document.getElementById('photo')
-                    .files[0])
+                formData.append('photo', document.getElementById('photo').files[0])
             }
         }
 
@@ -141,6 +160,139 @@
         $nameInput.on('blur input', function() {
             validateFullNameInput($(this));
         });
+
+        const $password = $('#password');
+        const $confirm = $('#password_confirmation');
+        const $rulesContainer = $('#passwordRulesModal');
+        const $confirmHelp = $('#passwordConfirmHelpModal');
+        const $submitBtn = $('.btn-submit');
+
+        let passwordValid = true;
+        let confirmValid = true;
+
+        function validatePasswordRules(password) {
+            if (password.length === 0) {
+                $rulesContainer.addClass('d-none');
+                return true;
+            }
+
+            $rulesContainer.removeClass('d-none');
+
+            let rules = {
+                length: password.length >= 6,
+                uppercase: /[A-Z]/.test(password),
+                number: /\d/.test(password),
+                special: /[@$!%*#?&._-]/.test(password)
+            };
+
+            $('#rule-length-modal')
+                .toggleClass('text-success', rules.length)
+                .toggleClass('text-muted', !rules.length)
+                .html(`${rules.length ? '✔' : '✖'} Mínimo de 6 caracteres`);
+
+            $('#rule-uppercase-modal')
+                .toggleClass('text-success', rules.uppercase)
+                .toggleClass('text-muted', !rules.uppercase)
+                .html(`${rules.uppercase ? '✔' : '✖'} Pelo menos 1 letra maiúscula`);
+
+            $('#rule-number-modal')
+                .toggleClass('text-success', rules.number)
+                .toggleClass('text-muted', !rules.number)
+                .html(`${rules.number ? '✔' : '✖'} Pelo menos 1 número`);
+
+            $('#rule-special-modal')
+                .toggleClass('text-success', rules.special)
+                .toggleClass('text-muted', !rules.special)
+                .html(`${rules.special ? '✔' : '✖'} Pelo menos 1 caractere especial`);
+
+            return Object.values(rules).every(Boolean);
+        }
+
+        function validateConfirm(password, confirm) {
+            if (password.length === 0 && confirm.length === 0) {
+                return true;
+            }
+            if (password.length > 0 && confirm.length === 0) {
+                return false;
+            }
+            return password === confirm;
+        }
+
+        function validatePasswordForm() {
+            let password = $password.val();
+            let confirm = $confirm.val();
+
+            if (password.length === 0 && confirm.length === 0) {
+                passwordValid = true;
+                confirmValid = true;
+                $confirmHelp.addClass('d-none');
+                $rulesContainer.addClass('d-none');
+                updateSubmitButton();
+                return;
+            }
+
+            if (password.length > 0) {
+                passwordValid = validatePasswordRules(password);
+            } else {
+                passwordValid = false;
+                $rulesContainer.addClass('d-none');
+            }
+
+            confirmValid = validateConfirm(password, confirm);
+
+            if (password.length === 0 && confirm.length === 0) {
+                $confirmHelp.addClass('d-none');
+            } else if (confirm.length === 0 && password.length > 0) {
+                $confirmHelp.removeClass('d-none')
+                    .text('Repita a senha digitada acima.')
+                    .removeClass('text-success text-danger')
+                    .addClass('text-muted');
+            } else if (confirm.length > 0) {
+                $confirmHelp.removeClass('d-none');
+                if (confirmValid) {
+                    $confirmHelp.text('As senhas conferem ✔')
+                        .removeClass('text-danger text-muted')
+                        .addClass('text-success');
+                } else {
+                    $confirmHelp.text('As senhas não conferem.')
+                        .removeClass('text-success text-muted')
+                        .addClass('text-danger');
+                }
+            }
+
+            updateSubmitButton();
+        }
+
+        function updateSubmitButton() {
+            const canSubmit = (passwordValid && confirmValid);
+
+            if ($submitBtn.length) {
+                $submitBtn.prop('disabled', !canSubmit);
+            }
+        }
+
+        $password.on('input', validatePasswordForm);
+        $confirm.on('input', validatePasswordForm);
+
+        $(document).on('click', '.toggle-password-modal', function() {
+            const targetSelector = $(this).data('target');
+            const $target = $(targetSelector);
+            const $icon = $(this).find('i');
+
+            if ($target.attr('type') === 'password') {
+                $target.attr('type', 'text');
+                $icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                $target.attr('type', 'password');
+                $icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
+
+        $('#password, #password_confirmation').on('copy paste cut', function(e) {
+            e.preventDefault();
+        });
+
+        validatePasswordForm();
     });
 
     function validateFullNameInput($input) {

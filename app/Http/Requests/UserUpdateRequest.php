@@ -6,6 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class UserUpdateRequest extends FormRequest
 {
@@ -44,10 +45,13 @@ class UserUpdateRequest extends FormRequest
             'password' => [
                 'nullable',
                 'string',
-                'min:4',
                 'confirmed',
+                Password::min(6)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
             ],
-            'password_confirmation' => ['nullable', 'string', 'min:4'],
+            'password_confirmation' => ['nullable', 'string'],
         ];
     }
 
