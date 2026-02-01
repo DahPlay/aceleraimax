@@ -56,7 +56,7 @@
                     </a>
 
                     @can('developer')
-                        <a href="{{ route('log-viewer.index') }}" class="dropdown-item py-2">
+                        <a href="{{ route('log-viewer.index') }}" class="dropdown-item py-2" target="_blank">
                             <i class="fas fa-file-alt"></i> Logs do Sistema
                         </a>
                     @endcan

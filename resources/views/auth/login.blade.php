@@ -1,5 +1,23 @@
 @extends('auth.template.index')
 
+@section('headLocal')
+    <style>
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 60%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+            z-index: 5;
+        }
+
+        .toggle-password:hover {
+            color: #000;
+        }
+    </style>
+@endsection
+
 @section('content')
     <div class="background-login col-6 d-none d-md-flex"
         style="background-image: url('/Auth-Panel/dist/img/{{ config('custom.background_login_image') }}')"></div>
@@ -9,7 +27,7 @@
 
         @if ($errors->any())
             <script>
-                document.addEventListener('DOMContentLoaded', function () {
+                document.addEventListener('DOMContentLoaded', function() {
                     Swal.fire({
                         icon: 'error',
                         title: 'Atenção aos seguintes erro(s):',
@@ -76,11 +94,15 @@
                     </div>
 
 
-                    <div class="input-group mb-2 d-flex flex-column">
+                    <div class="input-group mb-2 d-flex flex-column position-relative">
                         <label for="password"></label>
                         <input type="password" @error('password') has-error @enderror value="{{ old('password') ?? '' }}"
                             name="password" id="password" class="form-control w-100" placeholder="Senha"
-                            style="min-height: 40px">
+                            style="min-height: 40px; padding-right: 40px;">
+
+                        <span class="toggle-password" data-target="#password">
+                            <i class="fa fa-eye"></i>
+                        </span>
 
                         @error('password')
                             <span class="text-danger position-relative" style="top: 10px;">{{ $message }}</span>
@@ -95,15 +117,14 @@
                         </div>
 
                         <div class="col-12 d-flex align-items-center justify-content-center">
-                            {{-- {{ route('password.email') }} --}}
                             <a href="{{ route('password.request') }}" class="password-button text-center border text-black"
                                 style="background-color: {{ config('custom.button_color_senha') }}; color: {{ config('custom.button_text_color_senha') }}; border: {{ config('custom.button_color_senha') }}!important;">
-                                <i class="fab fa-lock mr-2"></i> Esqueci minha senha
+                                <i class="fa fa-lock mr-2"></i> Esqueci minha senha
                             </a>
                         </div>
                     </div>
 
-                    <div class="">
+                    <div class="row">
                         <div class="col-12">
                             <div class="social-auth-links text-center mb-3">
                                 <p style=" color: {{ config('custom.text_color_conta') }};">Não tem uma conta? <a
@@ -117,4 +138,23 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('javascriptLocal')
+    <script>
+        $(document).ready(function() {
+            $(document).on('click', '.toggle-password', function() {
+                const target = $($(this).data('target'));
+                const icon = $(this).find('i');
+
+                if (target.attr('type') === 'password') {
+                    target.attr('type', 'text');
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    target.attr('type', 'password');
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+        });
+    </script>
 @endsection
