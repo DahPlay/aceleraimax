@@ -4,6 +4,14 @@
     <link rel="stylesheet" href="{{ asset('Auth-Panel/dist/css/front/front.css') }}">
 
     <style>
+        .card-brand-icon {
+            position: absolute;
+            right: 7px;
+            top: 38px;
+            width: 38px;
+            height: auto;
+        }
+
         .toggle-password {
             position: absolute;
             right: 12px;
@@ -420,7 +428,7 @@
                         <div class="input-group mb-3">
                             <label class="title-input2" for="usuario">Usuário *</label>
                             <input type="text" name="login" id="usuario" class="form-control"
-                                placeholder="Usuário *" required
+                                placeholder="Usuário *"
                                 value="{{ old('login', session('customerData')['login'] ?? '') }}" readonly>
                         </div>
 
@@ -436,7 +444,8 @@
                                 <label class="title-input2 w-100" for="password">Crie sua senha *</label>
 
                                 <input type="password" name="password" id="password" class="form-control"
-                                    placeholder="Crie uma senha forte" required minlength="6">
+                                    placeholder="Crie uma senha forte" value="{{ old('password') ?? '' }}" required
+                                    minlength="6">
 
                                 <span class="toggle-password" data-target="#password">
                                     <i class="fa fa-eye"></i>
@@ -460,7 +469,8 @@
                                     *</label>
 
                                 <input type="password" name="password_confirmation" id="password_confirmation"
-                                    class="form-control" placeholder="Repita sua senha" required>
+                                    class="form-control" placeholder="Repita sua senha"
+                                    value="{{ old('password_confirmation') ?? '' }}" required>
 
                                 <span class="toggle-password" data-target="#password_confirmation">
                                     <i class="fa fa-eye"></i>
@@ -485,8 +495,8 @@
                         </div>
                     </div>
 
+                    <!-- Step 4: Payment Info -->
                     <div class="step-content" data-step-content="4" id="step-4">
-
                         <div id="access_free" class="card bg-gradient-cyan mb-4" style="display: none;">
                             <div class="card-header">
                                 🎁 Acesso gratuito liberado!
@@ -499,32 +509,38 @@
                         </div>
 
                         <div id="credit-card-fields">
-                            <div class="input-group mb-3">
+                            <div class="input-group mb-3 position-relative">
                                 <label class="title-input2" for="card_number">Número do cartão</label>
+
                                 <input name="credit_card_number" id="card_number" class="form-control"
                                     placeholder="Informe o número do cartão" required>
+
+                                <img id="card-brand" src="" alt="" class="card-brand-icon d-none">
                             </div>
 
                             <div class="input-group mb-3">
                                 <label class="title-input2" for="card_name">Nome do titular do cartão</label>
                                 <input type="text" name="credit_card_name" id="card_name" class="form-control"
-                                    required>
+                                    placeholder="Informe o nome do titular do cartão"
+                                    value="{{ old('credit_card_name') ?? '' }}" required>
                             </div>
 
                             <div class="input-group mb-3">
                                 <label class="title-input2" for="card_expiry_month">Mês</label>
                                 <input type="text" name="credit_card_expiry_month" id="card_expiry_month"
-                                    class="form-control" required>
+                                    class="form-control" minlength="2" maxlength="2" placeholder="00"
+                                    value="{{ old('credit_card_expiry_month') ?? '' }}" required>
 
                                 <label class="title-input2" for="card_expiry_year">Ano</label>
                                 <input type="text" name="credit_card_expiry_year" id="card_expiry_year"
-                                    class="form-control" required>
+                                    class="form-control" minlength="4" maxlength="4" placeholder="0000"
+                                    value="{{ old('credit_card_expiry_year') ?? '' }}" required>
                             </div>
 
                             <div class="input-group mb-3">
                                 <label class="title-input2" for="card_ccv">CVV</label>
                                 <input type="text" name="credit_card_ccv" id="card_ccv" class="form-control"
-                                    required>
+                                    required minlength="3" maxlength="4" inputmode="numeric">
                             </div>
                         </div>
 
@@ -631,6 +647,10 @@
 
 @section('javascriptLocal')
     <script>
+        const INITIAL_STEP = {{ session('register_step', 1) }};
+    </script>
+
+    <script>
         let emailIsValid = false;
         let emailExistsApp = false;
         let emailExistsStreaming = false;
@@ -656,15 +676,12 @@
 
             if (planSelected) {
                 if (!couponFieldHasValue) {
-                    // Campo vazio: pode prosseguir
                     canProceed = true;
                     $('#couponWarning').addClass('d-none');
                 } else if (couponApplied) {
-                    // Cupom aplicado com sucesso: pode prosseguir
                     canProceed = true;
                     $('#couponWarning').addClass('d-none');
                 } else {
-                    // Campo preenchido mas cupom não aplicado: não pode prosseguir
                     canProceed = false;
                     $('#couponWarning').removeClass('d-none');
                 }
@@ -838,7 +855,7 @@
                     clearTimeout(emailTimeout);
 
                     $('#email-error, #email-exists-app, #email-exists-streaming').addClass(
-                    'd-none');
+                        'd-none');
                     $(input).removeClass('is-invalid');
 
                     if (!value) {
@@ -936,37 +953,6 @@
             const $confirm = $('#password_confirmation');
             const $btnNext = $('#btnNextStep');
 
-            function validatePasswordRules(password) {
-                let rules = {
-                    length: password.length >= 6,
-                    uppercase: /[A-Z]/.test(password),
-                    number: /\d/.test(password),
-                    special: /[@$!%*#?&._-]/.test(password)
-                };
-
-                $('#rule-length').toggleClass('text-success', rules.length)
-                    .toggleClass('text-danger', !rules.length)
-                    .text(`${rules.length ? '✔' : '✖'} Mínimo de 6 caracteres`);
-
-                $('#rule-uppercase').toggleClass('text-success', rules.uppercase)
-                    .toggleClass('text-danger', !rules.uppercase)
-                    .text(`${rules.uppercase ? '✔' : '✖'} Pelo menos 1 letra maiúscula`);
-
-                $('#rule-number').toggleClass('text-success', rules.number)
-                    .toggleClass('text-danger', !rules.number)
-                    .text(`${rules.number ? '✔' : '✖'} Pelo menos 1 número`);
-
-                $('#rule-special').toggleClass('text-success', rules.special)
-                    .toggleClass('text-danger', !rules.special)
-                    .text(`${rules.special ? '✔' : '✖'} Pelo menos 1 caractere especial`);
-
-                return Object.values(rules).every(Boolean);
-            }
-
-            function validateConfirm(password, confirm) {
-                return confirm.length > 0 && password === confirm;
-            }
-
             let passwordValid = false;
             let confirmValid = false;
 
@@ -1019,7 +1005,10 @@
             const $btnSubmit = $step4.find('.btn-submit');
 
             $step4.find('input').on('input change', function() {
-                $btnSubmit.prop('disabled', !validateRequiredFields($step4));
+                const isValid = validateRequiredFields($step4);
+
+                $btnSubmit.prop('disabled', !isValid);
+                updateStepStatus();
             });
 
             $(document).ready(function() {
@@ -1042,7 +1031,164 @@
             $('#password, #password_confirmation').on('copy paste cut', function(e) {
                 e.preventDefault();
             });
+
+            if (INITIAL_STEP > 1) {
+                navigateToStep(INITIAL_STEP);
+                updateStepStatus();
+            }
+
+            if ($('.alert-danger').length) {
+                $('html, body').animate({
+                    scrollTop: $('.alert-danger').offset().top - 20
+                }, 400);
+            }
+
+            $('#card_number').on('input', function() {
+                const number = $(this).val().replace(/\D/g, '');
+                const brand = detectCardBrand(number);
+
+                const $cvv = $('#card_ccv');
+                const $brandIcon = $('#card-brand');
+
+                if (brand === 'amex') {
+                    $cvv.attr({
+                        maxlength: 4,
+                        minlength: 4,
+                        placeholder: '0000'
+                    });
+                } else {
+                    $cvv.attr({
+                        maxlength: 3,
+                        minlength: 3,
+                        placeholder: '000'
+                    });
+                }
+
+                if (brand) {
+                    $brandIcon
+                        .attr('src', `/images/cards/${brand}.svg`)
+                        .attr('alt', brand)
+                        .removeClass('d-none');
+                } else {
+                    $brandIcon
+                        .attr('src', '')
+                        .attr('alt', '')
+                        .addClass('d-none');
+                }
+            });
+
         });
+
+        function detectCardBrand(number) {
+            if (/^4/.test(number)) return 'visa';
+            if (/^(5[1-5]|2[2-7])/.test(number)) return 'mastercard';
+            if (/^3[47]/.test(number)) return 'amex';
+            if (/^6(?:011|5)/.test(number)) return 'discover';
+            if (/^3(?:0[0-5]|[68])/.test(number)) return 'diners';
+            if (/^35/.test(number)) return 'jcb';
+            if (/^(4011|4312|4389|4514|4576|5041)/.test(number)) return 'elo';
+            return null;
+        }
+
+        function validatePasswordRules(password) {
+            let rules = {
+                length: password.length >= 6,
+                uppercase: /[A-Z]/.test(password),
+                number: /\d/.test(password),
+                special: /[@$!%*#?&._-]/.test(password)
+            };
+
+            $('#rule-length').toggleClass('text-success', rules.length)
+                .toggleClass('text-danger', !rules.length)
+                .text(`${rules.length ? '✔' : '✖'} Mínimo de 6 caracteres`);
+
+            $('#rule-uppercase').toggleClass('text-success', rules.uppercase)
+                .toggleClass('text-danger', !rules.uppercase)
+                .text(`${rules.uppercase ? '✔' : '✖'} Pelo menos 1 letra maiúscula`);
+
+            $('#rule-number').toggleClass('text-success', rules.number)
+                .toggleClass('text-danger', !rules.number)
+                .text(`${rules.number ? '✔' : '✖'} Pelo menos 1 número`);
+
+            $('#rule-special').toggleClass('text-success', rules.special)
+                .toggleClass('text-danger', !rules.special)
+                .text(`${rules.special ? '✔' : '✖'} Pelo menos 1 caractere especial`);
+
+            return Object.values(rules).every(Boolean);
+        }
+
+        function validateConfirm(password, confirm) {
+            return confirm.length > 0 && password === confirm;
+        }
+
+        function revalidateStep2() {
+            const $step2 = $('[data-step-content="2"]');
+            const $btnStep2 = $step2.find('.btn-next');
+
+            const cpf = ($('#document').val() || '').replace(/\D/g, '');
+            const email = ($('#email').val() || '').trim();
+
+            cpfIsValid = cpf.length === 11 && isValidCPF(cpf);
+            cpfExists = false;
+            cpfIsChecking = false;
+
+            $('#cpf-invalid, #cpf-exists, #cpf-checking').addClass('d-none');
+            $('#document').removeClass('is-invalid');
+
+            if (cpf && !cpfIsValid) {
+                $('#cpf-invalid').removeClass('d-none');
+                $('#document').addClass('is-invalid');
+            }
+
+            emailIsValid = isValidEmail(email);
+            emailExistsApp = false;
+            emailExistsStreaming = false;
+            emailIsChecking = false;
+
+            $('#email-error, #email-checking').addClass('d-none');
+            $('#email').removeClass('is-invalid');
+
+            if (email && !emailIsValid) {
+                $('#email-error').removeClass('d-none');
+                $('#email').addClass('is-invalid');
+            }
+
+            const stepValid =
+                validateRequiredFields($step2) &&
+                cpfIsValid &&
+                !cpfExists &&
+                !cpfIsChecking &&
+                emailIsValid &&
+                !emailExistsApp &&
+                !emailExistsStreaming &&
+                !emailIsChecking;
+
+            $btnStep2.prop('disabled', !stepValid);
+
+            updateStepStatus();
+        }
+
+        function revalidateStep3() {
+            const $step3 = $('[data-step-content="3"]');
+
+            const password = $('#password').val() || '';
+            const confirm = $('#password_confirmation').val() || '';
+
+            if (!$('#password').length) {
+                $('#btnNextStep').prop('disabled', !validateRequiredFields($step3));
+                return;
+            }
+
+            passwordValid = validatePasswordRules(password);
+            confirmValid = confirm.length > 0 && password === confirm;
+
+            const requiredFieldsValid = validateRequiredFields($step3);
+
+            $('#btnNextStep').prop(
+                'disabled',
+                !(passwordValid && confirmValid && requiredFieldsValid)
+            );
+        }
 
         function toggleStep4Visibility() {
             const total = $('#total_with_discounted').val();
@@ -1104,12 +1250,15 @@
         function syncUsernameWithEmail(email, isValid) {
             const $username = $('#usuario');
 
+            if ($username.val()) {
+                return;
+            }
+
             if (isValid) {
                 $username.val(email);
-            } else {
-                $username.val('');
             }
         }
+
 
         function nextTick(fn) {
             requestAnimationFrame(fn);
@@ -1210,6 +1359,12 @@
                         $(this).addClass('completed');
                     }
                 }
+
+                if (stepNumber === currentStep) {
+                    if (validateRequiredFields($stepContent)) {
+                        $(this).addClass('completed');
+                    }
+                }
             });
         }
 
@@ -1255,6 +1410,14 @@
 
             $('.step').removeClass('active');
             $(`.step[data-step="${stepNumber}"]`).addClass('active');
+
+            if (stepNumber === 2) {
+                revalidateStep2();
+            }
+
+            if (stepNumber === 3) {
+                revalidateStep3();
+            }
         }
 
         function selectPlan(planId) {

@@ -85,7 +85,8 @@
                         </li>
                         <li class="active px-4"
                             style="background-color: {{ config('custom.background_button_home_menu_color_cadastre') }};">
-                            <a href="#planos">{{ config('custom.text_menu_5') }}</a></li>
+                            <a href="#planos">{{ config('custom.text_menu_5') }}</a>
+                        </li>
                         <li class="active px-4 d-flex align-items-center"
                             style="background-color: {{ config('custom.background_home_menu_color') }}; border-radius: 10px;">
                             <a href="{{ config('custom.portal_link') }}" target="_blank"
@@ -489,7 +490,7 @@
                             src="{{ config('custom.image_social_media_3') }}" alt=""></a>
                 </div> -->
             </div>
-            <img class="logo-footer" src="{{ config('custom.logo_baseboard') }}" alt="">
+            <img class="logo-footer" src="{{ config('custom.logo_1') }}" alt="">
         </div>
         <p class="copyright-footer">{{ config('custom.text_copy') }}</p>
     </footer>

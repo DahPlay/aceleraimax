@@ -113,11 +113,32 @@ class RegisterController extends Controller
             ]
         ];
 
+        $messages = [
+            'credit_card_number.required' => 'O número do cartão de crédito é obrigatório.',
+            'credit_card_number.credit_card' => 'O número do cartão de crédito informado é inválido.',
+
+            'credit_card_expiry_month.required' => 'O mês de expiração do cartão é obrigatório.',
+            'credit_card_expiry_month.digits' => 'O mês de expiração do cartão deve conter 2 dígitos.',
+
+            'credit_card_expiry_year.required' => 'O ano de expiração do cartão é obrigatório.',
+            'credit_card_expiry_year.digits' => 'O ano de expiração do cartão deve conter 4 dígitos.',
+
+            'credit_card_ccv.required' => 'O código de segurança do cartão é obrigatório.',
+            'credit_card_ccv.digits_between' => 'O código de segurança do cartão deve conter 3 ou 4 dígitos.',
+        ];
+
+        $attributes = [
+            'credit_card_number' => 'número do cartão de crédito',
+            'credit_card_expiry_month' => 'mês de expiração do cartão',
+            'credit_card_expiry_year' => 'ano de expiração do cartão',
+            'credit_card_ccv' => 'código de segurança do cartão',
+        ];
+
         if ($finalValue > 0) {
             $rules['credit_card_number'] = ['required', new \App\Rules\CreditCard()];
             $rules['credit_card_expiry_month'] = ['required', 'digits:2'];
             $rules['credit_card_expiry_year'] = ['required', 'digits:4'];
-            $rules['credit_card_ccv'] = ['required'];
+            $rules['credit_card_ccv'] = ['required', 'digits_between:3,4'];
         } else {
             $rules['credit_card_number'] = ['nullable'];
             $rules['credit_card_expiry_month'] = ['nullable'];
@@ -125,7 +146,7 @@ class RegisterController extends Controller
             $rules['credit_card_ccv'] = ['nullable'];
         }
 
-        return Validator::make($data, $rules);
+        return Validator::make($data, $rules, $messages, $attributes);
     }
 
     protected function create(array $data): User
@@ -151,7 +172,16 @@ class RegisterController extends Controller
             }
         }
 
-        $this->validator($data, $finalValue)->validate();
+        $validator = $this->validator($data, $finalValue);
+
+        if ($validator->fails()) {
+            $step = $this->resolveRegisterStep($validator);
+
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('register_step', $step);
+        }
 
         $data = $request->only([
             'plan_id',
@@ -302,6 +332,41 @@ class RegisterController extends Controller
 
             return back()->withInput();
         }
+    }
+
+    private function resolveRegisterStep(\Illuminate\Contracts\Validation\Validator $validator): int
+    {
+        $fields = collect($validator->errors()->keys());
+
+        if ($fields->intersect([
+            'credit_card_number',
+            'credit_card_name',
+            'credit_card_expiry_month',
+            'credit_card_expiry_year',
+            'credit_card_ccv',
+            'terms',
+        ])->isNotEmpty()) {
+            return 4;
+        }
+
+        if ($fields->intersect([
+            'password',
+            'password_confirmation',
+            'login',
+        ])->isNotEmpty()) {
+            return 3;
+        }
+
+        if ($fields->intersect([
+            'name',
+            'document',
+            'mobile',
+            'email',
+        ])->isNotEmpty()) {
+            return 2;
+        }
+
+        return 1;
     }
 
     private function verifyCustomerInYouCast(CustomerService $customerService): mixed
