@@ -343,7 +343,8 @@
                                 placeholder="Digite seu cpf *" required>
 
                             <span id="cpf-invalid" class="mt-1 small text-danger d-none">
-                                ⚠️ CPF inválido.
+                                ⚠️ O CPF informado é inválido. Confira se os números foram digitados corretamente e tente
+                                novamente.
                             </span>
 
                             <span id="cpf-checking" class="mt-1 small text-info d-none">
@@ -509,13 +510,15 @@
                         </div>
 
                         <div id="credit-card-fields">
-                            <div class="input-group mb-3 position-relative">
+                            <div class="input-group mb-3">
                                 <label class="title-input2" for="card_number">Número do cartão</label>
-
-                                <input name="credit_card_number" id="card_number" class="form-control"
-                                    placeholder="Informe o número do cartão" required>
-
-                                <img id="card-brand" src="" alt="" class="card-brand-icon d-none">
+                                <div class="position-relative w-100">
+                                    <input name="credit_card_number" id="card_number" class="form-control"
+                                        placeholder="0000 0000 0000 0000" value="{{ old('credit_card_number') ?? '' }}"
+                                        minlength="13" maxlength="19" required>
+                                    <img id="card-brand" src="" alt="" class="d-none"
+                                        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); height: 24px; width: auto;">
+                                </div>
                             </div>
 
                             <div class="input-group mb-3">
@@ -540,7 +543,8 @@
                             <div class="input-group mb-3">
                                 <label class="title-input2" for="card_ccv">CVV</label>
                                 <input type="text" name="credit_card_ccv" id="card_ccv" class="form-control"
-                                    required minlength="3" maxlength="4" inputmode="numeric">
+                                    required minlength="3" maxlength="4" placeholder="000" inputmode="numeric"
+                                    value="{{ old('credit_card_ccv') ?? '' }}">
                             </div>
                         </div>
 
@@ -787,19 +791,21 @@
                 $('#cpf-invalid, #cpf-exists, #cpf-checking').addClass('d-none');
                 $(this).removeClass('is-invalid');
 
+                updateStep2Button();
+
                 if (cpf.length < 11) {
-                    updateStep2Button();
                     return;
                 }
 
                 if (!isValidCPF(cpf)) {
                     $('#cpf-invalid').removeClass('d-none');
                     $(this).addClass('is-invalid');
+                    cpfIsValid = false;
                     updateStep2Button();
                     return;
                 }
 
-                cpfIsValid = true;
+                cpfIsValid = false;
                 cpfIsChecking = true;
                 $('#cpf-checking').removeClass('d-none');
                 updateStep2Button();
@@ -814,6 +820,9 @@
                         if (cpfExists) {
                             $('#cpf-exists').removeClass('d-none');
                             $('#document').addClass('is-invalid');
+                            cpfIsValid = false;
+                        } else {
+                            cpfIsValid = true;
                         }
 
                         cpfIsChecking = false;
@@ -821,12 +830,11 @@
                         updateStep2Button();
                     }).fail(() => {
                         cpfIsChecking = false;
+                        cpfIsValid = false;
                         $('#cpf-checking').addClass('d-none');
                         updateStep2Button();
                     });
                 }, 400);
-
-                updateStep2Button();
             });
 
             $('#mobile').on('input blur', function() {
@@ -929,8 +937,12 @@
                 const $step2 = $('[data-step-content="2"]');
                 const $btnStep2 = $step2.find('.btn-next');
 
+                const cpfValue = $('#document').val().replace(/\D/g, '');
+                const cpfComplete = cpfValue.length === 11;
+
                 const stepValid =
                     validateRequiredFields($step2) &&
+                    cpfComplete &&
                     cpfIsValid &&
                     !cpfExists &&
                     !cpfIsChecking &&
@@ -984,14 +996,6 @@
 
             $password.on('input', validateForm);
             $confirm.on('input', validateForm);
-
-            // Step 2
-            const $step2 = $('[data-step-content="2"]');
-            const $btnStep2 = $step2.find('.btn-next');
-
-            $step2.find('input').on('input', function() {
-                $btnStep2.prop('disabled', !validateRequiredFields($step2));
-            });
 
             // Step 3
             let requiredFieldsValid = validateRequiredFields(
@@ -1047,6 +1051,7 @@
                 const number = $(this).val().replace(/\D/g, '');
                 const brand = detectCardBrand(number);
 
+                const $cardNumber = $(this);
                 const $cvv = $('#card_ccv');
                 const $brandIcon = $('#card-brand');
 
@@ -1056,12 +1061,42 @@
                         minlength: 4,
                         placeholder: '0000'
                     });
+
+                    $cardNumber.attr({
+                        minlength: 15,
+                        maxlength: 17,
+                        placeholder: '0000 000000 00000'
+                    });
+
+                    $cardNumber.mask('0000 000000 00000');
+                } else if (brand === 'diners') {
+                    $cvv.attr({
+                        maxlength: 3,
+                        minlength: 3,
+                        placeholder: '000'
+                    });
+
+                    $cardNumber.attr({
+                        minlength: 14,
+                        maxlength: 16,
+                        placeholder: '0000 000000 0000'
+                    });
+
+                    $cardNumber.mask('0000 000000 0000');
                 } else {
                     $cvv.attr({
                         maxlength: 3,
                         minlength: 3,
                         placeholder: '000'
                     });
+
+                    $cardNumber.attr({
+                        minlength: 16,
+                        maxlength: 19,
+                        placeholder: '0000 0000 0000 0000'
+                    });
+
+                    $cardNumber.mask('0000 0000 0000 0000');
                 }
 
                 if (brand) {
@@ -1076,7 +1111,6 @@
                         .addClass('d-none');
                 }
             });
-
         });
 
         function detectCardBrand(number) {
